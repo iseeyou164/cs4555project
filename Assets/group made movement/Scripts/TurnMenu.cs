@@ -115,6 +115,7 @@ public class TurnMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            currentState = MenuState.None;
             StartCoroutine(RollDiceCoroutine());
         }
 
