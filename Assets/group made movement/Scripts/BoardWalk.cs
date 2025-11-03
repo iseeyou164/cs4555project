@@ -61,7 +61,7 @@ public class BoardWalk : MonoBehaviour
             UpdateStepLabel(steps);
         }
 
-        Land(tiles[currentTileIndex]);
+        yield return StartCoroutine(Land(tiles[currentTileIndex]));
         isMoving = false;
     }
 
@@ -93,8 +93,9 @@ public class BoardWalk : MonoBehaviour
         }
     }
 
-    void Land(Transform tile)
+    public IEnumerator Land(Transform tile)
     {
+        yield return new WaitForSeconds(0.25f);
         if (tile.CompareTag("blue_tile"))
         {
             /* Generic Tile? Maybe give gold when landed on (when that's added?) */
@@ -116,16 +117,34 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("yellow_tile"))
         {
-            isMoving = true;
-            /* Trap Tile plays trap depending on trapID tag */
+            //isMoving = true;
             TrapTile trap = tile.GetComponent<TrapTile>();
             if (trap != null)
             {
                 Debug.Log("Landed on yellow tile. Trap ID: " + trap.trapID);
-                TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
+                yield return TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
             }
         }
+        //wait till event's over
+        yield return new WaitWhile(() => EventManager.IsEventRunning);
+        EndTileEffect();
     }
+
+    //private IEnumerator HandleTrap(Transform tile)
+    //{
+    //    isMoving = true;
+
+    //    TrapTile trap = tile.GetComponent<TrapTile>();
+    //    if (trap != null)
+    //    {
+    //        Debug.Log("Landed on yellow tile. Trap ID: " + trap.trapID);
+    //        yield return TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
+    //    }
+
+    //    // end when trap is finished
+    //    EndTileEffect();
+    //}
+
 
     // Call this when the effect is fully done
     public void EndTileEffect()

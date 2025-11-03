@@ -74,10 +74,10 @@ public class PlayerData : MonoBehaviour
             if (gold < 0) gold = 0;  // prevent negative gold
 
             UpdateStatusUI();
-            Debug.Log($"{playerName} gains {increment} gold. gold: {gold}");
 
             yield return new WaitForSeconds(0.25f);  // wait 0.1 seconds between each increment
         }
+        Debug.Log($"{playerName} gains {amount} gold. gold: {gold}");
         //UpdateStatusUI();
     }
 
@@ -154,8 +154,9 @@ public class PlayerData : MonoBehaviour
                 Debug.LogWarning("No BoardWalk component found on player!");
             }
             health = maxHealth;
-            UpdateStatusUI();
+            //UpdateStatusUI();
         }
+        UpdateStatusUI();
     }
 
 
@@ -224,6 +225,18 @@ public class PlayerData : MonoBehaviour
                 i = items.Length;
             }
         }
+    }
+
+    public int RollDice(int sides, int rolls)
+    {
+        int total = 0;
+        for (int i = 0; i < rolls; i++) ;
+        {
+            int roll = Random.Range(1, sides + 1);
+            total += roll;
+            Debug.Log($"{playerName} rolled a {roll} on a d{sides}");
+        }
+        return total;
     }
 
     public void UpdateStatusUI()

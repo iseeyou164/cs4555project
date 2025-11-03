@@ -39,19 +39,38 @@ public class TurnManager : MonoBehaviour
     }
     void Start()
     {
+        //turnActive = false;
         focusCam = FindFirstObjectByType<FocusCamera>();
         turnMenu = FindFirstObjectByType<TurnMenu>();
         turnMenu.RefreshPlayer();
-        StartCoroutine(StartTurn());
+        StartCoroutine(GameLoop());
     }
 
-   private IEnumerator StartTurn()
+    private IEnumerator GameLoop()
     {
+        // Small setup wait
+        yield return new WaitForSeconds(0.01f);
+
+        while (true) // main turn loop
+        {
+            Debug.Log($"Next turn");
+            yield return StartCoroutine(StartTurn());
+            NextTurn();
+        }
+    }
+
+    private IEnumerator StartTurn()
+    {
+        //yield return new WaitWhile(() => turnActive=false);
+        yield return new WaitWhile(() => EventManager.IsEventRunning);
         yield return new WaitForSeconds(1.5f);
         turnActive = true;
         BoardWalk currentPlayer = players[currentPlayerIndex];
+        //yield return new WaitWhile(() => !currentPlayer.isMoving);
         PlayerData playerData = PlayerManager.Instance.GetPlayer(currentPlayerIndex);
         focusCam.SetTarget(players[currentPlayerIndex].transform);
+        var poi = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
+        poi.SetTarget(currentPlayer.transform);
         yield return new WaitForSeconds(0.5f);
         Debug.Log($"It’s {currentPlayer.name}’s turn!");
         playerData.usedItem = false;
@@ -68,18 +87,17 @@ public class TurnManager : MonoBehaviour
         // Move the player (triggered by TurnMenu after roll)
         yield return StartCoroutine(currentPlayer.MoveSteps(totalRollResult));
 
-        // Wait for tile effects (e.g., blue/gold tiles)
-        while (currentPlayer.isMoving)
-            yield return null;
+        // Wait for tile effects (e.g., green/gold tiles)
+        //while (currentPlayer.isMoving)
+            //yield return null;
 
-        // Reset flags
+        yield return new WaitUntil(() => !currentPlayer.isMoving);
+        // Turn finished, go to next player!
         hasRolledThisTurn = false;
         totalRollResult = 0;
-
-
-        // Turn finished, go to next player!
-        NextTurn();
-        StartCoroutine(StartTurn());
+        turnActive = false;
+        //NextTurn();
+        //StartCoroutine(StartTurn());
 
     }
 
@@ -97,5 +115,7 @@ public class TurnManager : MonoBehaviour
     {
         currentPlayerIndex = (currentPlayerIndex + 1) % PlayerManager.Instance.players.Count;
         Debug.Log($"Turn switched to: {GetCurrentPlayer().playerName}");
+        turnActive = true;
+        //StartCoroutine(GameLoop());
     }
 }

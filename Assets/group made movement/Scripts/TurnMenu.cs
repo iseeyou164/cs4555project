@@ -6,7 +6,7 @@ public class TurnMenu : MonoBehaviour
 {
 
     public enum MenuState { Main, Move, Item, Map, None }
-    public MenuState currentState = MenuState.Main;
+    public MenuState currentState = MenuState.None;
 
     [Header("UI")]
     public TextMeshProUGUI moveText;
@@ -26,10 +26,10 @@ public class TurnMenu : MonoBehaviour
     void Start()
     {
         //?
-        currentState = MenuState.Main;
-        selectedOption = 0;
-        currentPlayer = TurnManager.Instance.GetCurrentPlayer();
-        ShowMainMenu();
+        //currentState = MenuState.Main;
+        //selectedOption = 0;
+        //currentPlayer = TurnManager.Instance.GetCurrentPlayer();
+        //ShowMainMenu();
     }
 
     // Update is called once per frame
@@ -117,6 +117,7 @@ public class TurnMenu : MonoBehaviour
         {
             currentState = MenuState.None;
             StartCoroutine(RollDiceCoroutine());
+
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -128,27 +129,39 @@ public class TurnMenu : MonoBehaviour
 
     private IEnumerator RollDiceCoroutine()
     {
-        int roll = 0;
-        int diceUsed = 0;
 
         Debug.Log($"{currentPlayer.name} is rolling the dice...");
-        Debug.Log($"{currentPlayer.minMoveRoll} minroll & {currentPlayer.maxMoveRoll} maxroll");
+        //Debug.Log($"{currentPlayer.minMoveRoll} minroll & {currentPlayer.maxMoveRoll} maxroll");
         turnMenuText.text = $"";
 
-        while (currentPlayer.diceCount > 0)
+        bool resultReady = false;
+        int roll = 0;
+
+        yield return StartCoroutine(DiceRoller.Instance.RollDiceVisual(6, currentPlayer.diceCount, result =>
         {
-            // Simulate dice roll (press space once to roll one die)
-            roll += Random.Range(currentPlayer.minMoveRoll, currentPlayer.maxMoveRoll + 1);
-            diceUsed++;
-            currentPlayer.diceCount -= 1;
-            if (currentPlayer.diceCount > 0)
-            {
-                Debug.Log($"{currentPlayer.name} has {currentPlayer.diceCount} dice left!");
-            }
+            roll = result;
+            resultReady = true;
+        }));
 
-            yield return new WaitForSeconds(0.5f); // add a brief pause for effect)
+        while (!resultReady)
+            yield return null;
 
-        }
+        //roll = currentPlayer.RollDice(6, currentPlayer.diceCount);
+        //yield return new WaitForSeconds(0.5f); // add a brief pause for effect)
+
+        //while (currentPlayer.diceCount > 0)
+        //{
+        //    // Simulate dice roll (press space once to roll one die)
+        //    roll = currentPlayer.RollDice(6, currentPlayer.diceCount);
+        //    currentPlayer.diceCount -= 1;
+        //    if (currentPlayer.diceCount > 0)
+        //    {
+        //        Debug.Log($" Current Total = {roll}: {currentPlayer.name} has {currentPlayer.diceCount} dice left!");
+        //    }
+
+        //    yield return new WaitForSeconds(0.5f); // add a brief pause for effect)
+
+        //}
 
         // Apply move bonus (from Pixie Dust, etc.)
         if (currentPlayer.moveBonus != 0)
@@ -168,6 +181,7 @@ public class TurnMenu : MonoBehaviour
 
         // Reset dice count for next turn
         currentPlayer.diceCount = 1;
+        //currentPlayer.GetComponent<BoardWalk>.isMoving = true;
 
         Debug.Log($"{currentPlayer.name} will move {roll} spaces!");
 
