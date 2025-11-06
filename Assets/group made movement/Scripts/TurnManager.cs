@@ -72,6 +72,14 @@ public class TurnManager : MonoBehaviour
         var poi = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
         poi.SetTarget(currentPlayer.transform);
         yield return new WaitForSeconds(0.5f);
+
+        //poison effect
+        if (playerData.poisonDuration > 0)
+        {
+            Debug.Log($"It’s {currentPlayer.name} takes {playerData.poisonDuration} damage from poison. {playerData.poisonDuration-1} poison left!");
+            playerData.poisonDuration -= 1;
+        }
+
         Debug.Log($"It’s {currentPlayer.name}’s turn!");
         playerData.usedItem = false;
 

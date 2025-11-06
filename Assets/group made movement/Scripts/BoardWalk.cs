@@ -74,6 +74,8 @@ public class BoardWalk : MonoBehaviour
         }
 
         transform.position = targetTile.position;
+        yield return StartCoroutine(Land(tiles[currentTileIndex]));
+        isMoving = false;
     }
 
     void UpdateStepLabel(int steps)
@@ -103,12 +105,14 @@ public class BoardWalk : MonoBehaviour
             currentPlayer.GetComponent<PlayerData>().AddGold(3);
             //currentPlayer.GetComponent<PlayerData>().UpdateStatusUI();
             Debug.Log($"{currentPlayer.GetComponent<PlayerData>().playerName} landed on blue tile +3 Gold!");
+            EventManager.IsEventRunning = false;
 
         }
         else if (tile.CompareTag("red_tile"))
         {
             /* Combat or Obstacle Tile? Could start a fight?*/
             Debug.Log("Landed on red tile. Initiate combat ");
+            EventManager.IsEventRunning = false;
         }
         else if (tile.CompareTag("green_tile"))
         {
@@ -149,13 +153,14 @@ public class BoardWalk : MonoBehaviour
     // Call this when the effect is fully done
     public void EndTileEffect()
     {
+        Debug.Log("End Tile Effect");
         isMoving = false;
 
     }
 
     public void TeleportToTile(int tileIndex)
     {
-        if(tileIndex >= 0 && tileIndex < tiles.Length)
+        if (tileIndex >= 0 && tileIndex < tiles.Length)
         {
             StopAllCoroutines();
             currentTileIndex = tileIndex;

@@ -32,6 +32,7 @@ public class PlayerData : MonoBehaviour
     public int moveBonus = 0;
     public int diceCount = 1;
     public bool usedItem = false;
+    public int poisonDuration = 0;
 
 
     void Start()
@@ -143,6 +144,8 @@ public class PlayerData : MonoBehaviour
             //Lose 50% gold
             int deduct = gold / 2;
             gold = gold - deduct;
+            //clear misc effects
+            poisonDuration = 0;
             Debug.Log($"Player lost all HP. Loses {deduct} gold. Remaining: {gold}");
             BoardWalk player = GetComponent<BoardWalk>();
             if (player != null)
@@ -157,6 +160,19 @@ public class PlayerData : MonoBehaviour
             //UpdateStatusUI();
         }
         UpdateStatusUI();
+    }
+
+    public void ApplyEffect(string effectName, int duration)
+    {
+        if (effectName == "Poison")
+        {
+            poisonDuration += duration;
+        }
+        else
+        {
+            Debug.Log("Null effect");
+        }
+            Debug.Log($"{playerName} is affected by {effectName} for {duration} turns.");
     }
 
 
