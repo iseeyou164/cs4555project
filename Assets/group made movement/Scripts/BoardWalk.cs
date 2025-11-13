@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -10,72 +10,71 @@ public class BoardWalk : MonoBehaviour
     /*For text display*/
     public TextMeshProUGUI stepLabel = null;
 
-    private int currentTileIndex = 0;
+    public int currentTileIndex = 0;
     public bool isMoving = false;
-
-    //void Update()
-    //{
-
-    //    if (Input.GetKeyDown(KeyCode.Space) && !isMoving)
-    //    {
-    //        /* random value from 1 to 6 */
-    //        int steps = Random.Range(1, 7);
-    //        UpdateStepLabel(steps);
-    //        StartCoroutine(MoveSteps(steps));
-    //    }
-    //}
 
     public IEnumerator MoveSteps(int steps)
     {
         isMoving = true;
         UpdateStepLabel(steps);
+
         while (steps > 0)
         {
-            Debug.Log((currentTileIndex + 1) + " / " + (tiles.Length));
-            if (currentTileIndex < tiles.Length - 1)
+
+            Transform currentTile = tiles[currentTileIndex];
+            SplitTile split = currentTile.GetComponent<SplitTile>();
+
+            if (split != null)
             {
-                currentTileIndex++;
+                yield return StartCoroutine(SplitIDManager.Instance.ChooseSplit(this, split));
+                yield return new WaitForSeconds(0.1f);
+                steps--;
             }
             else
             {
-                // Loop back to start or tile 2 (for now)
-                currentTileIndex = 2;
+                // No split tile, just go to the next
+                currentTileIndex++;
+                steps--;
             }
 
-            // Move toward the next tile
-            Vector3 startPos = transform.position;
-            Vector3 endPos = tiles[currentTileIndex].position;
-            float t = 0f;
-            float duration = 0.3f;
-            duration *= moveSpeed;
+            // Move to currentTileIndex with your MoveToTile coroutine
+            float duration = 1f / moveSpeed; // higher speed = shorter duration
+            yield return StartCoroutine(MoveToTile(transform.position, tiles[currentTileIndex].position, duration));
 
-            while (t < duration)
-            {
-                transform.position = Vector3.Lerp(startPos, endPos, t / duration);
-                t += Time.deltaTime;
-                yield return null;
-            }
-
-            transform.position = endPos;
-            steps--;
+            Debug.Log($"Tile {currentTileIndex} / {tiles.Length}");
             UpdateStepLabel(steps);
+            yield return new WaitForSeconds(0.1f);
         }
 
         yield return StartCoroutine(Land(tiles[currentTileIndex]));
         isMoving = false;
     }
 
-    IEnumerator MoveToTile(Transform targetTile)
+    private IEnumerator MoveToTile(Vector3 startPos, Vector3 endPos, float duration)
     {
-        while (Vector3.Distance(transform.position, tiles[currentTileIndex].position) > 0.01f)
+        float elapsed = 0f;
+
+        // midpoint lifted slightly for arc effect
+        Vector3 midPos = (startPos + endPos) / 2f + Vector3.up * 0.5f;
+
+        while (elapsed < duration)
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetTile.position, moveSpeed * Time.deltaTime);
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            // move in a simple curved path
+            Vector3 curvedPos = Vector3.Lerp(
+                Vector3.Lerp(startPos, midPos, t),
+                Vector3.Lerp(midPos, endPos, t),
+                t
+            );
+
+            transform.position = curvedPos;
+
             yield return null;
         }
 
-        transform.position = targetTile.position;
-        yield return StartCoroutine(Land(tiles[currentTileIndex]));
-        isMoving = false;
+        transform.position = endPos;
     }
 
     void UpdateStepLabel(int steps)
@@ -116,8 +115,13 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("green_tile"))
         {
-            /* Event Tile (run some dialog and stuff happens?) */
-            Debug.Log("Landed on green tile. Event ID:  ");
+            Debug.Log("Landed on green tile. Reward ID: ");
+            RewardTile reward = tile.GetComponent<RewardTile>();
+            if (reward != null)
+            {
+                Debug.Log("Landed on green tile. Reward ID: " + reward.rewardID);
+                yield return RewardIDManager.Instance.TriggerReward(reward.rewardID, this);
+            }
         }
         else if (tile.CompareTag("yellow_tile"))
         {
@@ -134,54 +138,88 @@ public class BoardWalk : MonoBehaviour
         EndTileEffect();
     }
 
-    //private IEnumerator HandleTrap(Transform tile)
-    //{
-    //    isMoving = true;
-
-    //    TrapTile trap = tile.GetComponent<TrapTile>();
-    //    if (trap != null)
-    //    {
-    //        Debug.Log("Landed on yellow tile. Trap ID: " + trap.trapID);
-    //        yield return TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
-    //    }
-
-    //    // end when trap is finished
-    //    EndTileEffect();
-    //}
-
-
     // Call this when the effect is fully done
     public void EndTileEffect()
     {
         Debug.Log("End Tile Effect");
+        EventManager.IsEventRunning = false;
         isMoving = false;
-
+        
     }
 
-    public void TeleportToTile(int tileIndex)
+    //public void TeleportToTile(int tileIndex)
+    //{
+    //    if (tileIndex >= 0 && tileIndex < tiles.Length)
+    //    {
+    //        StopAllCoroutines();
+    //        currentTileIndex = tileIndex;
+    //        transform.position = tiles[currentTileIndex].position;
+    //        //StartCoroutine(MoveToTile(tiles[currentTileIndex]));
+    //        yield return StartCoroutine(MoveToTile(transform.position, nextTile.position, moveSpeed));
+    //    }
+    //}
+
+    public IEnumerator TeleportToTile(int tileIndex)
     {
-        if (tileIndex >= 0 && tileIndex < tiles.Length)
+        if (tileIndex < 0 || tileIndex >= tiles.Length) yield break;
+
+        currentTileIndex = tileIndex;
+
+        Vector3 startPos = transform.position;
+        Vector3 endPos = tiles[currentTileIndex].position;
+
+        float duration = 0.5f; // smooth teleport animation
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            StopAllCoroutines();
-            currentTileIndex = tileIndex;
-            transform.position = tiles[currentTileIndex].position;
-            StartCoroutine(MoveToTile(tiles[currentTileIndex]));
+            elapsed += Time.deltaTime;
+            transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            yield return null;
         }
+
+        transform.position = endPos;
     }
 
-    public void MoveBackwards(int steps)
+    private IEnumerator TeleportRoutine(int tileIndex)
     {
+        Vector3 startPos = transform.position;
+        Vector3 endPos = tiles[tileIndex].position;
+
+        currentTileIndex = tileIndex;
         isMoving = true;
 
-        Debug.Log((currentTileIndex + 1) + " / " + (tiles.Length));
-        currentTileIndex -= steps;
-        if (currentTileIndex < 0)
-        {
-            currentTileIndex = 0;
-        }
-        TeleportToTile(currentTileIndex);
+        // Smooth curved movement using your MoveToTile function
+        yield return StartCoroutine(MoveToTile(startPos, endPos, 0.5f));
 
         isMoving = false;
     }
+
+    //public void MoveBackwards(int steps)
+    //{
+    //    isMoving = true;
+
+    //    Debug.Log((currentTileIndex + 1) + " / " + (tiles.Length));
+    //    currentTileIndex -= steps;
+    //    if (currentTileIndex < 0)
+    //    {
+    //        currentTileIndex = 0;
+    //    }
+    //    TeleportToTile(currentTileIndex);
+
+    //    isMoving = false;
+    //}
+    public void MoveBackwards(int steps)
+    {
+        if (isMoving) return;
+        isMoving = true;
+
+        currentTileIndex -= steps;
+        if (currentTileIndex < 0)
+            currentTileIndex = 0;
+
+        StartCoroutine(TeleportRoutine(currentTileIndex));
+    }
+
 
 }

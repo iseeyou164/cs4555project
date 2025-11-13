@@ -1,6 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class PlayerData : MonoBehaviour
 {
@@ -45,11 +46,13 @@ public class PlayerData : MonoBehaviour
         usedItem = false;
         items = new string[3];
 
+        PlayerManager.Instance.RegisterPlayer(this);
+
         if (statsText == null)
         {
             statsText = GameObject.Find($"{playerName}_StatsText").GetComponent<TextMeshProUGUI>();
         }
-        PlayerManager.Instance.RegisterPlayer(this);
+
         UpdateStatusUI();
 
         //PlayerManager.Instance.GetPlayer(0).AddGold(50); <- to give player 1 50 gold
@@ -108,6 +111,7 @@ public class PlayerData : MonoBehaviour
             // POP UP DIALOGUE
             Debug.Log($"Player lost {-amount} glory. Total: {glory}");
         }
+        UpdateStatusUI();
 
     }
 
@@ -131,7 +135,6 @@ public class PlayerData : MonoBehaviour
 
             return false;
         }
-
     }
 
     public void gainHealth(int amount)
@@ -159,6 +162,12 @@ public class PlayerData : MonoBehaviour
             health = maxHealth;
             //UpdateStatusUI();
         }
+
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+
         UpdateStatusUI();
     }
 
@@ -246,7 +255,7 @@ public class PlayerData : MonoBehaviour
     public int RollDice(int sides, int rolls)
     {
         int total = 0;
-        for (int i = 0; i < rolls; i++) ;
+        for (int i = 0; i < rolls; i++);
         {
             int roll = Random.Range(1, sides + 1);
             total += roll;
@@ -255,12 +264,43 @@ public class PlayerData : MonoBehaviour
         return total;
     }
 
+    //take items list and display appropriate sprites?
+
     public void UpdateStatusUI()
     {
+        if (statsText == null)
+        {
+            Debug.LogWarning("statsText is null for " + playerName);
+            return;
+        }
+
         if (statsText != null)
         {
-            string itemDisplay = string.Join(" ", items);
-            statsText.text = $"{playerName}\nHealth: {health}/{maxHealth}\nGold: {gold}\nGlory: {glory}\nItems: {string.Join(" ", items)}";
+
+            string itemDisplay = "";
+            //for(int i = 0; i < items.Length; i++)
+            //{
+            //    switch (items[i])
+            //    {
+            //        case "Pixie Dust":
+            //            itemDisplay += "✧";
+            //            break;
+            //        case "Double Dice":
+            //            itemDisplay += "x2🎲";
+            //            break;
+            //        case "Triple Dice":
+            //            itemDisplay += "x3🎲";
+            //            break;
+            //        default:
+            //            itemDisplay += "-";
+            //            break;
+            //    }
+            //    itemDisplay += " ";
+
+            //}
+            itemDisplay = string.Join(" ", items);
+
+            statsText.text = $"{playerName}\nHealth: {health}/{maxHealth}\nGold: {gold}\nGlory: {glory}\nItems: {itemDisplay}";
             statsText.ForceMeshUpdate();
             Canvas.ForceUpdateCanvases();
             statsText.enabled = false;
@@ -271,9 +311,6 @@ public class PlayerData : MonoBehaviour
             Debug.LogWarning("statsText is null for " + playerName);
         }
     }
-
-
-    //Work on Gear Next time!
 
 
 

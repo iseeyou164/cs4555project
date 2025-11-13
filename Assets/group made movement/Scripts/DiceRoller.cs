@@ -16,6 +16,7 @@ public class DiceRoller : MonoBehaviour
     //public float rollDuration = 2f; // how long dice roll before reading result
     public float stopThreshold = 0.01f; // how slow dice must get to be considered stopped
     public float checkInterval = 0.5f;  // how often to check if dice stopped
+    public float timeout = 5f; // 5 seconds timeout
 
     private void Awake()
     {
@@ -54,9 +55,23 @@ public class DiceRoller : MonoBehaviour
             spawnedDice.Add(die.GetComponent<DiceFaceReader>());
         }
 
-        // Wait until all dice have stopped
+        // Wait until all dice have stopped (expires in X seconds)
+        float timer = 0f;
         bool allStopped = false;
-        while (!allStopped)
+        //while (!allStopped)
+        //{
+        //    allStopped = true;
+        //    foreach (var die in spawnedDice)
+        //    {
+        //        if (!die.HasStopped)
+        //        {
+        //            allStopped = false;
+        //            break;
+        //        }
+        //    }
+        //    yield return null; // check again next frame
+        //}
+        while (!allStopped && timer < timeout)
         {
             allStopped = true;
             foreach (var die in spawnedDice)
@@ -67,14 +82,42 @@ public class DiceRoller : MonoBehaviour
                     break;
                 }
             }
+            timer += Time.deltaTime;
             yield return null; // check again next frame
         }
 
-
-        foreach (var die in spawnedDice)
+        if (!allStopped)
         {
-            total += die.FinalValue;
+            Debug.LogWarning("Dice timeout reached! Forcing result...");
+            // Force a random result for dice that didn’t stop
+            foreach (var die in spawnedDice)
+            {
+                if (die.HasStopped)
+                {
+                    total += die.FinalValue;
+                }
+                else
+                {
+                    total += Random.Range(1, sides + 1);
+                    Destroy(die.gameObject);
+                }
+                allStopped = true;
+            }
         }
+        else
+        {
+            foreach (var die in spawnedDice)
+            {
+                total += die.FinalValue;
+            }
+        }
+
+
+
+        //foreach (var die in spawnedDice)
+        //{
+        //    total += die.FinalValue;
+        //}
 
 
         //for (int i = 0; i < rolls; i++)

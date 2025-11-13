@@ -13,7 +13,7 @@ public class DialogManager : MonoBehaviour
     public Image dialogueBackground;
 
     [Header("Settings")]
-    public float padding = 20f; // padding around text
+    public float padding = 50f; // padding around text
 
     private bool waitingForInput = false;
 
@@ -50,6 +50,39 @@ public class DialogManager : MonoBehaviour
         ClearMessage();
     }
 
+    public IEnumerator ShowBinaryChoiceAndWait(
+     string message, string choiceA, string choiceB, System.Action<bool> onChoiceMade)
+    {
+        ShowMessage(message +
+            $"\nPress [Space] to {choiceA}\nPress [Z] to {choiceB}");
+
+        dialogueBackground.gameObject.SetActive(true);
+        ResizeBackground();
+        waitingForInput = true;
+
+        bool choiceMade = false;
+        bool choiceASelected = false;
+
+        while (!choiceMade)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                choiceASelected = true;
+                choiceMade = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.Z))
+            {
+                choiceASelected = false;
+                choiceMade = true;
+            }
+            yield return null;
+        }
+
+        waitingForInput = false;
+        ClearMessage();
+        onChoiceMade?.Invoke(choiceASelected);
+    }
+
     public void ClearMessage()
     {
         if (eventDialogue != null)
@@ -67,7 +100,8 @@ public class DialogManager : MonoBehaviour
         Vector2 textSize = eventDialogue.GetRenderedValues(false);
 
         // Set the background size slightly larger than text
-        dialogueBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 2, padding * 2);
+        dialogueBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 2, padding * 1);
+        //dialogueBackground.rectTransform.sizeDelta = new Vector2(padding * 2, padding * 2);
     }
 
 }

@@ -8,6 +8,7 @@ TagManager:
   - green_tile
   - yellow_tile
   - red_tile
+  - chest_closed
   layers:
   - Default
   - TransparentFX

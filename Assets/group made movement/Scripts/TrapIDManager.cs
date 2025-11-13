@@ -45,6 +45,8 @@ public class TrapIDManager : MonoBehaviour
                 yield return PoisonIvyTrap(player);
                 break;
 
+            //case 4: mushroom launch pad: launches them down the cliff
+
             default:
                 Debug.Log("Trap ?");
                 player.EndTileEffect();
@@ -79,7 +81,11 @@ public class TrapIDManager : MonoBehaviour
         else
         {
             yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You failed to dodge and return to start!");
-            player.TeleportToTile(targetIndex);
+            yield return player.StartCoroutine(player.TeleportToTile(targetIndex));
+            //player.TeleportToTile(targetIndex);
+
+            //yield return new WaitForSeconds(0.25f);
+            //yield return player.StartCoroutine(player.Land(player.tiles[targetIndex]));
 
         }
         Debug.Log("Trap Finished");
