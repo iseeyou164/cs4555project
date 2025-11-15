@@ -137,4 +137,34 @@ public class DiceRoller : MonoBehaviour
         }
         DiceResult.Instance.ShowResult(total);
     }
+
+    // Roll player vs gambler
+    public IEnumerator RollPlayerVsGambler(System.Action<int, int> onComplete)
+    {
+        int playerResult = -1;
+        int gamblerResult = -1;
+
+        //player dice
+        yield return StartCoroutine(RollDiceVisual(6, 1, (value) =>
+        {
+            playerResult = value;
+            Debug.Log("Player rolled: " + value);
+        }));
+
+        yield return new WaitForSeconds(1f);
+
+        //gambler dice
+        yield return StartCoroutine(RollDiceVisual(7, 1, (value) =>
+        {
+            gamblerResult = value;
+            Debug.Log("Gambler rolled: " + value);
+        }));
+
+        // Return results
+        onComplete?.Invoke(playerResult, gamblerResult);
+    }
+
+
+
+
 }

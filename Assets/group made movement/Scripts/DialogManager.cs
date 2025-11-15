@@ -13,7 +13,7 @@ public class DialogManager : MonoBehaviour
     public Image dialogueBackground;
 
     [Header("Settings")]
-    public float padding = 50f; // padding around text
+    public float padding = 10f; // padding around text
 
     private bool waitingForInput = false;
 
@@ -83,6 +83,99 @@ public class DialogManager : MonoBehaviour
         onChoiceMade?.Invoke(choiceASelected);
     }
 
+    public IEnumerator ShowAmountChoiceAndWait(
+    string message, string choiceA, string choiceB,
+    int min_amount, int max_amount, System.Action<int> onChoiceMade)
+    {
+        int value = min_amount;
+
+        ShowMessage(
+            $"{message}\n" +
+            $"Press [A] to {choiceA}\n" +
+            $"Press [D] to {choiceB}\n" +
+            $"Press [Space] to confirm.\n" +
+            $"Value: {value}"
+        );
+
+        dialogueBackground.gameObject.SetActive(true);
+        ResizeBackground();
+        waitingForInput = true;
+
+        bool choiceMade = false;
+
+        while (!choiceMade)
+        {
+            // decrement
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                if (value > min_amount)
+                {
+                    value--;
+                    Debug.Log($"Decrement to {value}");
+                    ClearMessage();
+                    yield return new WaitForSeconds(0.02f);
+                    dialogueBackground.gameObject.SetActive(true);
+                    ShowMessage(
+                        $"{message}\n" +
+                        $"Press [A] to {choiceA}\n" +
+                        $"Press [D] to {choiceB}\n" +
+                        $"Press [Space] to confirm.\n" +
+                        $"Value: {value}"
+                    );
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+            // increment
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                if (value < max_amount)
+                {
+                    value++;
+                    Debug.Log($"Increment to {value}");
+                    ClearMessage();
+                    yield return new WaitForSeconds(0.02f);
+                    dialogueBackground.gameObject.SetActive(true);
+                    ShowMessage(
+                        $"{message}\n" +
+                        $"Press [A] to {choiceA}\n" +
+                        $"Press [D] to {choiceB}\n" +
+                        $"Press [Space] to confirm.\n" +
+                        $"Value: {value}"
+                    );
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+
+            // refresh dialog
+            //if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
+            //{
+            //    Debug.Log($"refresh dialog");
+            //    ClearMessage();
+            //    yield return new WaitForSeconds(0.1f);
+            //    ShowMessage(
+            //        $"{message}\n" +
+            //        $"Press [A] to {choiceA}\n" +
+            //        $"Press [D] to {choiceB}\n" +
+            //        $"Press [Space] to confirm.\n" +
+            //        $"Value: {value}"
+            //    );
+            //    yield return new WaitForSeconds(0.1f);
+            //}
+
+            // confirm
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                choiceMade = true;
+            }
+
+            yield return null;
+        }
+
+        waitingForInput = false;
+        ClearMessage();
+        onChoiceMade?.Invoke(value);
+    }
+
     public void ClearMessage()
     {
         if (eventDialogue != null)
@@ -100,7 +193,7 @@ public class DialogManager : MonoBehaviour
         Vector2 textSize = eventDialogue.GetRenderedValues(false);
 
         // Set the background size slightly larger than text
-        dialogueBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 2, padding * 1);
+        dialogueBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 2, padding * 2);
         //dialogueBackground.rectTransform.sizeDelta = new Vector2(padding * 2, padding * 2);
     }
 

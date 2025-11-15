@@ -71,7 +71,10 @@ public class TurnManager : MonoBehaviour
         focusCam.SetTarget(players[currentPlayerIndex].transform);
         var poi = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
         poi.SetTarget(currentPlayer.transform);
+        playerData.usedItem = false;
         yield return new WaitForSeconds(0.5f);
+
+        yield return DialogManager.Instance.ShowMessageAndWait($"It's {currentPlayer.name}’s turn!");
 
         //poison effect
         if (playerData.poisonDuration > 0)
@@ -80,9 +83,6 @@ public class TurnManager : MonoBehaviour
             playerData.gainHealth(-playerData.poisonDuration);
             playerData.poisonDuration -= 1;
         }
-
-        Debug.Log($"It’s {currentPlayer.name}’s turn!");
-        playerData.usedItem = false;
 
         // Refresh the menu for the new player
         TurnMenu turnMenu = FindFirstObjectByType<TurnMenu>();

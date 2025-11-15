@@ -1,6 +1,12 @@
+using JetBrains.Annotations;
 using System.Collections;
+using System.Security.Cryptography;
 using TMPro;
+using UnityEditor.Search;
 using UnityEngine;
+using static UnityEditor.Progress;
+using static UnityEditor.Rendering.CameraUI;
+using static UnityEngine.Rendering.DebugUI;
 
 public class TurnMenu : MonoBehaviour
 {
@@ -18,6 +24,7 @@ public class TurnMenu : MonoBehaviour
 
     private int selectedOption = 0; // 0=Move, 1=Item, 2=Map
     private int selectedItem = 0;
+    //private int item_count = 0;
 
     private PlayerData currentPlayer;
 
@@ -71,16 +78,16 @@ public class TurnMenu : MonoBehaviour
                     Debug.Log("Move selected");
                     break;
                 case 1: // ITEM
-                    if (currentPlayer.usedItem == false)
+                    if (currentPlayer.usedItem == true || currentPlayer.ItemCount()==0)
+                    {
+                        Debug.Log("Item menu disabled. Player has already used item this turn or has no items.");
+                    }
+                    else
                     {
                         selectedItem = 0;
                         currentState = MenuState.Item;
                         Debug.Log("Item menu opened");
                         //pls work!
-                    }
-                    else
-                    {
-                        Debug.Log("Item menu disabled. Player has already used item this turn or has no items.");
                     }
                     break;
                 case 2: // MAP
@@ -117,7 +124,6 @@ public class TurnMenu : MonoBehaviour
         {
             currentState = MenuState.None;
             StartCoroutine(RollDiceCoroutine());
-
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -137,11 +143,22 @@ public class TurnMenu : MonoBehaviour
         bool resultReady = false;
         int roll = 0;
 
-        yield return StartCoroutine(DiceRoller.Instance.RollDiceVisual(6, currentPlayer.diceCount, result =>
+        if (currentPlayer.diceCount == -1)
         {
-            roll = result;
-            resultReady = true;
-        }));
+            StartCoroutine(LuckyDiceFlow((result) =>
+            {
+                roll = result;
+                resultReady = true;
+            }));
+        }
+        else
+        {
+            yield return StartCoroutine(DiceRoller.Instance.RollDiceVisual(6, currentPlayer.diceCount, result =>
+            {
+                roll = result;
+                resultReady = true;
+            }));
+        }
 
         while (!resultReady)
             yield return null;
@@ -192,7 +209,6 @@ public class TurnMenu : MonoBehaviour
 
     void HandleItemMenuInput()
     {
-
         if (Input.GetKeyDown(KeyCode.W)) selectedItem = Mathf.Max(0, selectedItem - 1);
         if (Input.GetKeyDown(KeyCode.S)) selectedItem = Mathf.Min(2, selectedItem + 1);
 
@@ -201,8 +217,8 @@ public class TurnMenu : MonoBehaviour
             string item = currentPlayer.items[selectedItem];
             if (!string.IsNullOrEmpty(item))
             {
-                currentPlayer.UseItem(item);
-                currentState = MenuState.Main;
+                currentState = MenuState.None;
+                StartCoroutine(UseItemFlow(item));   // <- Run wrapper coroutine
             }
             else
             {
@@ -216,6 +232,39 @@ public class TurnMenu : MonoBehaviour
         }
 
         DisplayItemMenu();
+    }
+
+    private IEnumerator UseItemFlow(string itemName)
+    {
+        yield return new WaitForSeconds(0.1f);
+        yield return StartCoroutine(currentPlayer.UseItem(itemName));
+
+        // After item completes:
+        Debug.Log($"Finished using item: {itemName}");
+        currentState = MenuState.Main;
+        DisplayMainMenu();
+    }
+    private IEnumerator LuckyDiceFlow(System.Action<int> onChoiceMade)
+    {
+        int lucky = 0;
+        yield return new WaitForSeconds(0.1f);
+        //yield return StartCoroutine(currentPlayer.UseItem(itemName));
+        yield return DialogManager.Instance.ShowAmountChoiceAndWait(
+            "Rolling Lucky Dice. Choose dice roll from 1 to 10!",
+            "-1!",
+            "+1!",
+            1,
+            10,
+            (int value) =>
+            {
+                lucky = value;
+                //amount_to_gamble += value;
+                //player.GetComponent<PlayerData>().AddGold(-amount_to_gamble);
+            }
+        );
+        // After item completes:
+        onChoiceMade?.Invoke(lucky);
+        Debug.Log($"Finished using Lucky Dice");
     }
 
     void HandleMapMenuInput()
@@ -287,8 +336,7 @@ public class TurnMenu : MonoBehaviour
         }
         turnMenuText.text = output;
         //?
-
-
+    }
 
         //if (selectedOption == 0)
         //{
@@ -306,7 +354,6 @@ public class TurnMenu : MonoBehaviour
         //{
         //    turnMenuText.text = $"";
         //}
-    }
 
     void ClearMenu()
     {

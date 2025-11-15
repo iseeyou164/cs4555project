@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Profiling;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class RewardIDManager : MonoBehaviour
 {
@@ -35,6 +37,11 @@ public class RewardIDManager : MonoBehaviour
             case 1:
                 Debug.Log("Reward 1: Suspicious Mushroom");
                 yield return SuspiciousMushroom(player);
+                break;
+            case 2:
+                Debug.Log("Reward 2: The Gambler");
+                //asks the player to gamble any amount of gold. Default is 0. Use A to increment & D to decrement. Use Space to select.
+                yield return Gambler(player);
                 break;
             default:
                 Debug.Log("Reward ?");
@@ -163,6 +170,10 @@ public class RewardIDManager : MonoBehaviour
                 {
                     randomItem = "Double Dice";
                 }
+                else if (result >= 13)
+                {
+                    randomItem = "Potion";
+                }
                 else
                 {
                     randomItem = "Pixie Dust";
@@ -275,6 +286,113 @@ public class RewardIDManager : MonoBehaviour
         else
         {
             yield return DialogManager.Instance.ShowMessageAndWait("You decided to discard the mushroom.");
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        Debug.Log("Reward Finished");
+        EventManager.IsEventRunning = false;
+        player.EndTileEffect();
+    }
+
+    private IEnumerator Gambler(BoardWalk player)
+    {
+
+        yield return DialogManager.Instance.ShowMessageAndWait($"You meet the man who calls himself the Gambler.");
+
+        if (rewardEffectPrefab != null)
+        {
+            GameObject effect = Instantiate(rewardEffectPrefab, player.transform.position + Vector3.up * 1f, Quaternion.identity);
+            Destroy(effect, 0.5f);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        int choice = -1;
+
+        yield return DialogManager.Instance.ShowBinaryChoiceAndWait(
+            "Gambler: Would you like to gamble your hard-earned gold? It'll be worth it!",
+            "Accept",
+            "Decline",
+            (bool choiceASelected) =>
+            {
+                if (choiceASelected)
+                {
+                    if (player.GetComponent<PlayerData>().gold == 0)
+                    {
+                        choice = 1;
+                    }
+                    else
+                    {
+                        Debug.Log("Player chose Yes");
+                        choice = 0;
+                    }
+                }
+                else
+                {
+                    Debug.Log("Player chose No");
+                    choice = 1;
+                }
+            }
+        );
+
+        yield return new WaitUntil(() => choice == 0 || choice == 1);
+
+        int amount_to_gamble = 0;
+
+        if (choice == 0)
+        {
+            //Have a number in dialog manager? [D] to increment value. [A] to decrement value. [Space] to confirm and move on. Value cannot be below 0.
+            //yield return DialogManager.Instance.ShowMessageAndWait("Choose the amount of gold to gamble! Press [D] to decrement and [A] to increment. Press [Space] to confirm.");
+            yield return DialogManager.Instance.ShowAmountChoiceAndWait(
+            "Gambler: Would you like to gamble your hard-earned gold? You can maybe double it!",
+            "-1!",
+            "+1!",
+            1,
+            player.GetComponent<PlayerData>().gold,
+            (int value) =>
+            {
+                amount_to_gamble += value;
+                player.GetComponent<PlayerData>().AddGold(-amount_to_gamble);
+            }
+        );
+
+            bool finished = false;
+            //int result = 0;
+            int player_result = 0;
+            int gambler_result = 0;
+
+            // Compare Dice Rolls with the gambler
+            yield return StartCoroutine(DiceRoller.Instance.RollPlayerVsGambler((player, gambler) =>
+            {
+                player_result = player;
+                gambler_result = gambler;
+            }));
+            finished = true;
+
+            yield return new WaitUntil(() => finished);
+            if (player_result > gambler_result)
+            {
+                //win
+                yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player_result}! You win {amount_to_gamble * 2} gold!");
+                player.GetComponent<PlayerData>().AddGold(amount_to_gamble * 2);
+            }
+            else if (player_result < gambler_result)
+            {
+                //lose
+                yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player_result}! You lost your gold!");
+            }
+            else
+            {
+                //tie
+                yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player}! We tie! Take back your gold!");
+                player.GetComponent<PlayerData>().AddGold(amount_to_gamble);
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+        else
+        {
+            yield return DialogManager.Instance.ShowMessageAndWait("You decided to not gamble.");
             yield return new WaitForSeconds(0.5f);
         }
 

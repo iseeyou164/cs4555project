@@ -23,7 +23,7 @@ public class SplitIDManager : MonoBehaviour
         if (splitTile.optionAIndex == splitTile.optionBIndex)
         {
             Debug.Log($"SplitTile {splitTile.name} has only one path — going directly to {splitTile.optionAIndex}");
-            player.currentTileIndex = splitTile.optionAIndex;
+            player.currentTileIndex = splitTile.optionAIndex-1;
             yield break;
         }
 

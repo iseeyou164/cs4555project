@@ -23,19 +23,45 @@ public class BoardWalk : MonoBehaviour
 
             Transform currentTile = tiles[currentTileIndex];
             SplitTile split = currentTile.GetComponent<SplitTile>();
+            GloryTile glory = currentTile.GetComponent<GloryTile>();
 
-            if (split != null)
+            if (split == null)
+            {
+                currentTileIndex++;
+            }
+
+            if (glory != null && glory.isActive)
+            {
+                bool finishGlory = false;
+                Debug.Log($"glory!!!!!!!!");
+                yield return StartCoroutine(GloryManager.Instance.HandleGloryPurchase(this, glory,
+                    (bool getGlory) =>
+                    {
+                        if (getGlory)
+                        {
+                            finishGlory = true;
+                        }
+                        else
+                        {
+                            finishGlory = true;
+                        }
+                    }));
+                yield return new WaitUntil(() => finishGlory = true);
+                // Optionally, glory.isActive = false if it moves to another tile after purchase
+            }
+
+            if (split != null && glory == null)
             {
                 yield return StartCoroutine(SplitIDManager.Instance.ChooseSplit(this, split));
                 yield return new WaitForSeconds(0.1f);
-                steps--;
+                //steps--;
             }
-            else
-            {
-                // No split tile, just go to the next
-                currentTileIndex++;
-                steps--;
-            }
+            //else
+            //{
+            //    currentTileIndex++;
+            //    yield return new WaitForSeconds(0.1f);
+            //}
+            steps--;
 
             // Move to currentTileIndex with your MoveToTile coroutine
             float duration = 1f / moveSpeed; // higher speed = shorter duration
@@ -101,6 +127,7 @@ public class BoardWalk : MonoBehaviour
         {
             /* Generic Tile? Maybe give gold when landed on (when that's added?) */
             BoardWalk currentPlayer = TurnManager.Instance.CurrentPlayer;
+            yield return DialogManager.Instance.ShowMessageAndWait($"{currentPlayer.name} gained 3 gold!");
             currentPlayer.GetComponent<PlayerData>().AddGold(3);
             //currentPlayer.GetComponent<PlayerData>().UpdateStatusUI();
             Debug.Log($"{currentPlayer.GetComponent<PlayerData>().playerName} landed on blue tile +3 Gold!");
@@ -131,6 +158,21 @@ public class BoardWalk : MonoBehaviour
             {
                 Debug.Log("Landed on yellow tile. Trap ID: " + trap.trapID);
                 yield return TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
+            }
+        }
+        else if (tile.TryGetComponent<GloryTile>(out GloryTile gloryTile))
+        {
+            if (gloryTile.isActive)
+            {
+                Debug.Log("Landed on a Glory Tile!");
+
+                bool finished = false;
+                yield return GloryManager.Instance.HandleGloryPurchase(
+                    this,
+                    gloryTile,
+                    (bool getGlory) => { finished = true; }
+                );
+                yield return new WaitUntil(() => finished);
             }
         }
         //wait till event's over
