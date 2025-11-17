@@ -26,6 +26,8 @@ public class PlayerData : MonoBehaviour
 
     [Header("Player Info")]
     public string playerName;
+    private int score;
+    private int placement;
 
     [Header("Other Data")]
     public int minMoveRoll = 1;
@@ -48,10 +50,12 @@ public class PlayerData : MonoBehaviour
         health = 20;
         gold = 10;
         glory = 0;
+        score = 0;
+        placement = 1;
         usedItem = false;
         items = new string[3];
 
-        PlayerManager.Instance.RegisterPlayer(this);
+        //PlayerManager.Instance.RegisterPlayer(this);
 
         if (statsText == null)
         {
@@ -123,6 +127,14 @@ public class PlayerData : MonoBehaviour
             // POP UP DIALOGUE
             Debug.Log($"Player lost {-amount} glory. Total: {glory}");
         }
+
+        //if (glory >= GameSettings.Instance.glory_to_win)
+        //{
+        //    //run gameend function in turn manager
+        //    //TurnManager.Instance.EndGame(this);
+        //    StartCoroutine(TurnManager.Instance.EndGame(this));
+        //}
+
         UpdateStatusUI();
 
     }
@@ -153,26 +165,11 @@ public class PlayerData : MonoBehaviour
     {
         health += amount;
         Debug.Log($"Player lost {amount} HP. Remaining: {health}/{maxHealth} HP");
-        if (health < 0)
+        if (health <= 0)
         {
-            //Teleport to start
-            //Lose 50% gold
-            int deduct = gold / 2;
-            gold = gold - deduct;
-            //clear misc effects
-            poisonDuration = 0;
-            Debug.Log($"Player lost all HP. Loses {deduct} gold. Remaining: {gold}");
-            BoardWalk player = GetComponent<BoardWalk>();
-            if (player != null)
-            {
-                player.TeleportToTile(2); // send to start tile
-            }
-            else
-            {
-                Debug.LogWarning("No BoardWalk component found on player!");
-            }
-            health = maxHealth;
+            //health = maxHealth;
             //UpdateStatusUI();
+            StartCoroutine(Die());
         }
 
         if (health > maxHealth)
@@ -181,6 +178,37 @@ public class PlayerData : MonoBehaviour
         }
 
         UpdateStatusUI();
+    }
+
+    public IEnumerator Die()
+    {
+        //Teleport to start
+        //Lose 50% gold
+        int deduct = gold / 2;
+        gold = gold - deduct;
+        if (gold < 0)
+        {
+            gold = 0;
+        }
+        //clear misc effects
+        poisonDuration = 0;
+        yield return DialogManager.Instance.ShowMessageAndWait($"Player lost all HP. Loses {deduct} gold. Remaining: {gold}");
+        BoardWalk player = GetComponent<BoardWalk>();
+        if (player != null)
+        {
+            yield return player.TeleportToTile(0); // send to start tile
+        }
+        else
+        {
+            Debug.LogWarning("No BoardWalk component found on player!");
+        }
+        health = maxHealth;
+    }
+
+    public int calculateScore()
+    {
+        score = (glory * 100000) + (gold * 100) + (health);
+        return score;
     }
 
     public void ApplyEffect(string effectName, int duration)
@@ -263,18 +291,6 @@ public class PlayerData : MonoBehaviour
         }
         else if (itemName == "Lucky Dice")
         {
-            //    yield return DialogManager.Instance.ShowAmountChoiceAndWait(
-            //    "Gambler: Would you like to gamble your hard-earned gold? You can maybe double it!",
-            //    "-1!",
-            //    "+1!",
-            //    1,
-            //    10,
-            //    (int value) =>
-            //    {
-            //        amount_to_gamble += value;
-            //        player.GetComponent<PlayerData>().AddGold(-amount_to_gamble);
-            //    }
-            //);
             diceCount = -1;
             Debug.Log($"{playerName} used Custom Dice! They can choose their dice roll this turn.");
             dummy = true;
@@ -355,6 +371,29 @@ public class PlayerData : MonoBehaviour
             Debug.Log($"{playerName} rolled a {roll} on a d{sides}");
         }
         return total;
+    }
+
+    public void ResetForNewGame()
+    {
+        Debug.LogWarning("Reset");
+        // Basic stats
+        gold = 10;
+        glory = 0;
+        health = 20;
+
+        // Reset poison, shields, etc if you have them
+        poisonDuration = 0;
+        usedItem = false;
+
+        // Clear inventory
+        items[0] = null;
+        items[1] = null;
+        items[2] = null;
+
+        // Move player to starting tile
+        // BoardWalk holds the movement logic, so reset position there
+        BoardWalk bw = GetComponent<BoardWalk>();
+        StartCoroutine(bw.TeleportToTile(0));
     }
 
     //take items list and display appropriate sprites?

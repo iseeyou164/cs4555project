@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BoardWalk : MonoBehaviour
 {
-    public Transform[] tiles;
+    private Transform[] tiles;
     public float moveSpeed = 5f;
 
     /*For text display*/
@@ -12,6 +12,11 @@ public class BoardWalk : MonoBehaviour
 
     public int currentTileIndex = 0;
     public bool isMoving = false;
+
+    private void Awake()
+    {
+        tiles = GameSettings.Instance.tiles;
+    }
 
     public IEnumerator MoveSteps(int steps)
     {
@@ -123,7 +128,22 @@ public class BoardWalk : MonoBehaviour
     public IEnumerator Land(Transform tile)
     {
         yield return new WaitForSeconds(0.25f);
-        if (tile.CompareTag("blue_tile"))
+        if (tile.TryGetComponent<GloryTile>(out GloryTile gloryTile))
+        {
+            if (gloryTile.isActive)
+            {
+                Debug.Log("Landed on a Glory Tile!");
+
+                bool finished = false;
+                yield return GloryManager.Instance.HandleGloryPurchase(
+                    this,
+                    gloryTile,
+                    (bool getGlory) => { finished = true; }
+                );
+                yield return new WaitUntil(() => finished);
+            }
+        }
+        else if (tile.CompareTag("blue_tile"))
         {
             /* Generic Tile? Maybe give gold when landed on (when that's added?) */
             BoardWalk currentPlayer = TurnManager.Instance.CurrentPlayer;
@@ -158,21 +178,6 @@ public class BoardWalk : MonoBehaviour
             {
                 Debug.Log("Landed on yellow tile. Trap ID: " + trap.trapID);
                 yield return TrapIDManager.Instance.TriggerTrap(trap.trapID, this);
-            }
-        }
-        else if (tile.TryGetComponent<GloryTile>(out GloryTile gloryTile))
-        {
-            if (gloryTile.isActive)
-            {
-                Debug.Log("Landed on a Glory Tile!");
-
-                bool finished = false;
-                yield return GloryManager.Instance.HandleGloryPurchase(
-                    this,
-                    gloryTile,
-                    (bool getGlory) => { finished = true; }
-                );
-                yield return new WaitUntil(() => finished);
             }
         }
         //wait till event's over
@@ -262,6 +267,17 @@ public class BoardWalk : MonoBehaviour
 
         StartCoroutine(TeleportRoutine(currentTileIndex));
     }
+    //public void ResetPositionToStart()
+    //{
+    //    // Immediately teleport with no animation
+    //    transform.position = GameSettings.Instance.tiles[0].position;
+
+    //    // Reset the internal index (so movement works correctly)
+    //    currentTileIndex = 0;
+
+    //    // If you have a moving flag, clear it
+    //    isMoving = false;
+    //}
 
 
 }

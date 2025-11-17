@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using System.Collections;
 using System.Security.Cryptography;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor.Search;
 using UnityEngine;
 using static UnityEditor.Progress;
@@ -13,6 +14,9 @@ public class TurnMenu : MonoBehaviour
 
     public enum MenuState { Main, Move, Item, Map, None }
     public MenuState currentState = MenuState.None;
+
+    [Header("MapView")]
+    public Transform mapView;
 
     [Header("UI")]
     public TextMeshProUGUI moveText;
@@ -26,7 +30,10 @@ public class TurnMenu : MonoBehaviour
     private int selectedItem = 0;
     //private int item_count = 0;
 
+    public FocusCamera focusCam;
     private PlayerData currentPlayer;
+    //private int current_round;
+    //private int max_round;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -64,9 +71,11 @@ public class TurnMenu : MonoBehaviour
 
     void HandleMainMenuInput()
     {
-
-        if (Input.GetKeyDown(KeyCode.W)) selectedOption = Mathf.Max(0, selectedOption - 1);
-        if (Input.GetKeyDown(KeyCode.S)) selectedOption = Mathf.Min(2, selectedOption + 1);
+        DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
+            $"[W,Up,S,Down] to traverse menu.\n" +
+            $"[Space] to select option.\n");
+        if (Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) selectedOption = Mathf.Max(0, selectedOption - 1);
+        if (Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) selectedOption = Mathf.Min(2, selectedOption + 1);
 
 
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
@@ -92,6 +101,7 @@ public class TurnMenu : MonoBehaviour
                     break;
                 case 2: // MAP
                     currentState = MenuState.Map;
+                    EnterMapView();
                     Debug.Log("Map menu opened");
                     break;
                 default: //nothing
@@ -116,7 +126,35 @@ public class TurnMenu : MonoBehaviour
     //Dice Roll! (add multiple dice functionality later. After rolling the first dice, disable esc key))
     void HandleMoveMenuInput()
     {
-        turnMenuText.text = $"Press [Space] to roll dice.\nPress [Esc] to go back to menu.";
+        string diceText = "";
+        switch (currentPlayer.diceCount)
+        {
+            case -1:
+                diceText = "Lucky Dice";
+                break;
+            case 2:
+                diceText = "Double Dice";
+                break;
+            case 3:
+                diceText = "Triple Dice";
+                break;
+            default:
+                diceText = "Dice";
+                break;
+        }
+        if (currentPlayer.moveBonus!=0)
+        {
+            if (currentPlayer.moveBonus > 0)
+            {
+                diceText += " +";
+            }
+            diceText += $"{currentPlayer.moveBonus}";
+        }
+
+        DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
+        $"[Space] to roll dice!\n" +
+        $"[Esc] to return to previous menu.");
+        turnMenuText.text = $"[Roll {diceText}]";
 
         //Debug.Log("Gonna Roll?");
 
@@ -203,14 +241,19 @@ public class TurnMenu : MonoBehaviour
         Debug.Log($"{currentPlayer.name} will move {roll} spaces!");
 
         // Clear text
+        DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.");
         currentState = MenuState.None;
         //DisplayMainMenu();
     }
 
     void HandleItemMenuInput()
     {
-        if (Input.GetKeyDown(KeyCode.W)) selectedItem = Mathf.Max(0, selectedItem - 1);
-        if (Input.GetKeyDown(KeyCode.S)) selectedItem = Mathf.Min(2, selectedItem + 1);
+        DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
+            $"[W,Up,S,Down] to traverse items.\n" +
+            $"[Space] to select item.\n" +
+            $"[Esc] to return to previous menu.");
+        if (Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) selectedItem = Mathf.Max(0, selectedItem - 1);
+        if (Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) selectedItem = Mathf.Min(2, selectedItem + 1);
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -269,12 +312,40 @@ public class TurnMenu : MonoBehaviour
 
     void HandleMapMenuInput()
     {
+        DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
+            $"[Esc] to return to previous menu.\n");
+        turnMenuText.text = "Viewing Map...";
 
+        // Exit Map View
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            currentState = MenuState.Main;
-            Debug.Log("Back to main menu");
+            ExitMapView();
         }
+    }
+    public void EnterMapView()
+    {
+        currentState = MenuState.Map;
+
+        //focusCam.SetTarget(players[currentPlayerIndex].transform);
+        //var poi = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
+        //poi.SetTarget(currentPlayer.transform);
+
+        // Move camera to mapView target
+        focusCam.SetTarget(mapView.transform);
+        var poi = FindFirstObjectByType<PointOfInterest>();
+        poi.SetTarget(mapView);
+    }
+
+    public void ExitMapView()
+    {
+        currentState = MenuState.Main;
+
+        // Restore camera target to current player
+        focusCam.SetTarget(TurnManager.Instance.CurrentPlayer.transform);
+        var poi = FindFirstObjectByType<PointOfInterest>();
+        poi.SetTarget(TurnManager.Instance.CurrentPlayer.transform);
+        currentState = MenuState.Main;
+        DisplayMainMenu();
     }
     public void ShowMainMenu()
     {

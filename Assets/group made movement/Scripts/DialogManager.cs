@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,12 @@ public class DialogManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI eventDialogue;
     public Image dialogueBackground;
+    [SerializeField] private TextMeshProUGUI messageDialogue;
+    public Image messageBackground;
+    //[SerializeField] private TextMeshProUGUI mainMenu;
+    //public Image mainMenuBackground;
+    [SerializeField] private TextMeshProUGUI mainSettings;
+    public Image mainSettingsBackground;
 
     [Header("Settings")]
     public float padding = 10f; // padding around text
@@ -36,6 +43,23 @@ public class DialogManager : MonoBehaviour
         eventDialogue.text = message;
     }
 
+    public void ShowTop(string message)
+    {
+        if (messageDialogue == null)
+        {
+            Debug.LogError("Message_Dialogue reference missing in DialogManager!");
+            return;
+        }
+
+        GameSettings settings = GameSettings.Instance;
+        //PlayerData currentPlayer = GameSettings.Instance;
+        messageDialogue.text = message;
+
+        messageBackground.gameObject.SetActive(true);
+        ResizeTopBackground();
+
+    }
+
     public IEnumerator ShowMessageAndWait(string message)
     {
         ShowMessage(message);
@@ -54,7 +78,7 @@ public class DialogManager : MonoBehaviour
      string message, string choiceA, string choiceB, System.Action<bool> onChoiceMade)
     {
         ShowMessage(message +
-            $"\nPress [Space] to {choiceA}\nPress [Z] to {choiceB}");
+            $"\n[Space]: {choiceA}\n[Z]: {choiceB}");
 
         dialogueBackground.gameObject.SetActive(true);
         ResizeBackground();
@@ -91,9 +115,9 @@ public class DialogManager : MonoBehaviour
 
         ShowMessage(
             $"{message}\n" +
-            $"Press [A] to {choiceA}\n" +
-            $"Press [D] to {choiceB}\n" +
-            $"Press [Space] to confirm.\n" +
+            $"[A]: {choiceA}\n" +
+            $"[D]: {choiceB}\n" +
+            $"[Space]: Confirm.\n" +
             $"Value: {value}"
         );
 
@@ -106,7 +130,7 @@ public class DialogManager : MonoBehaviour
         while (!choiceMade)
         {
             // decrement
-            if (Input.GetKeyDown(KeyCode.A))
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 if (value > min_amount)
                 {
@@ -126,7 +150,7 @@ public class DialogManager : MonoBehaviour
                 }
             }
             // increment
-            else if (Input.GetKeyDown(KeyCode.D))
+            else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
             {
                 if (value < max_amount)
                 {
@@ -176,6 +200,80 @@ public class DialogManager : MonoBehaviour
         onChoiceMade?.Invoke(value);
     }
 
+    public IEnumerator ShowMainMenuAndWait(
+    string message, string choiceA, string choiceB,
+    System.Action<bool> onChoiceMade)
+    {
+        int player_count = GameSettings.Instance.player_count;
+        int round_count = GameSettings.Instance.round_limit;
+        //int glory_count = GameSettings.Instance.glory_to_win;
+
+        int choice = 0; // 0=players, 1=rounds, 2=start
+
+        dialogueBackground.gameObject.SetActive(true);
+
+        void Redraw()
+        {
+            string s =
+                $"{message}\n" +
+                $"{(choice == 0 ? "> " : "")}{choiceA} = {player_count}/{GameSettings.Instance.player_count_max}{(choice == 0 ? " <" : "")}\n" +
+                $"{(choice == 1 ? "> " : "")}{choiceB} = {round_count}/{GameSettings.Instance.round_limit_max}{(choice == 1 ? " <" : "")}\n" +
+                //$"{(choice == 2 ? "> " : "")}{choiceC} = {glory_count}/{GameSettings.Instance.glory_to_win_max}{(choice == 2 ? " <" : "")}\n" +
+                $"{(choice == 2 ? "> Start Game <" : "Start Game")}\n";
+
+            ShowMessage(s);
+            ResizeBackground();
+        }
+
+        Redraw();
+
+        bool done = false;
+
+        while (!done)
+        {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                choice--;
+                if (choice < 0) choice = 2;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                choice++;
+                if (choice > 2) choice = 0;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                if (choice == 0 && player_count < GameSettings.Instance.player_count_max) player_count++;
+                else if (choice == 1 && round_count < GameSettings.Instance.round_limit_max) round_count++;
+                //else if (choice == 2 && glory_count < GameSettings.Instance.glory_to_win_max) glory_count++;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                if (choice == 0 && player_count > GameSettings.Instance.player_count_min) player_count--;
+                else if (choice == 1 && round_count > GameSettings.Instance.round_limit_min) round_count--;
+                //else if (choice == 2 && glory_count > GameSettings.Instance.glory_to_win_min) glory_count--;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.Space) && choice == 2)
+            {
+                done = true;
+            }
+
+            yield return null;
+        }
+
+        // Save results
+        GameSettings.Instance.player_count = player_count;
+        GameSettings.Instance.round_limit = round_count;
+        //GameSettings.Instance.glory_to_win = glory_count;
+
+        ClearMessage();
+        onChoiceMade?.Invoke(true);
+    }
+
     public void ClearMessage()
     {
         if (eventDialogue != null)
@@ -194,6 +292,21 @@ public class DialogManager : MonoBehaviour
 
         // Set the background size slightly larger than text
         dialogueBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 2, padding * 2);
+        //dialogueBackground.rectTransform.sizeDelta = new Vector2(padding * 2, padding * 2);
+    }
+
+    private void ResizeTopBackground()
+    {
+        if (eventDialogue == null || dialogueBackground == null) return;
+
+        // Force TextMeshPro to update its internal layout
+        messageDialogue.ForceMeshUpdate();
+
+        // Get the rendered text size
+        Vector2 textSize = messageDialogue.GetRenderedValues(false);
+
+        // Set the background size slightly larger than text
+        messageBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 1, padding * 1);
         //dialogueBackground.rectTransform.sizeDelta = new Vector2(padding * 2, padding * 2);
     }
 
