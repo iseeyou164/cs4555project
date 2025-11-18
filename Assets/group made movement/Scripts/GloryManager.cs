@@ -8,6 +8,7 @@ public class GloryManager : MonoBehaviour
     private GameObject activeChest;
     public GameObject gloryParticlePrefab;
     private GameObject activeParticle;
+    public int currentGloryTileIndex;
 
     void Awake()
     {
@@ -52,6 +53,8 @@ public class GloryManager : MonoBehaviour
         foreach (var g in gloryTiles) g.isActive = false;
 
         gloryTiles[idx].isActive = true;
+        currentGloryTileIndex = gloryTiles[idx].tile_id;
+        Debug.Log($"Glory Tile is at Tile # {currentGloryTileIndex}");
         UpdateParticlePosition(gloryTiles[idx].transform);
         UpdateChestVisual();
     }

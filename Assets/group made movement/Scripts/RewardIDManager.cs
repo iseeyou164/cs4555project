@@ -678,7 +678,4 @@ public class RewardIDManager : MonoBehaviour
         EventManager.IsEventRunning = false;
         player.EndTileEffect();
     }
-
-
-
 }

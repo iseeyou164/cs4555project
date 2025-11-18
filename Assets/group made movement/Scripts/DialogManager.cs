@@ -144,9 +144,9 @@ public class DialogManager : MonoBehaviour
                     dialogueBackground.gameObject.SetActive(true);
                     ShowMessage(
                         $"{message}\n" +
-                        $"Press [A] to {choiceA}\n" +
-                        $"Press [D] to {choiceB}\n" +
-                        $"Press [Space] to confirm.\n" +
+                        $"Press [A]: {choiceA}\n" +
+                        $"Press [D]: {choiceB}\n" +
+                        $"Press [Space]: confirm.\n" +
                         $"Value: {value}"
                     );
                     yield return new WaitForSeconds(0.1f);
@@ -165,9 +165,9 @@ public class DialogManager : MonoBehaviour
                     dialogueBackground.gameObject.SetActive(true);
                     ShowMessage(
                         $"{message}\n" +
-                        $"Press [A] to {choiceA}\n" +
-                        $"Press [D] to {choiceB}\n" +
-                        $"Press [Space] to confirm.\n" +
+                        $"Press [A]: {choiceA}\n" +
+                        $"Press [D]: {choiceB}\n" +
+                        $"Press [Space]: confirm.\n" +
                         $"Value: {value}"
                     );
                     yield return new WaitForSeconds(0.1f);

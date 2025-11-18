@@ -36,7 +36,7 @@ MonoBehaviour:
     m_StrikethroughThickness: 0
     m_TabWidth: 0
   m_Material: {fileID: 2327719356466707684}
-  spriteSheet: {fileID: 2800000, guid: bac82c14f35abaa419d7d5bfdbe0c6d0, type: 3}
+  spriteSheet: {fileID: 2800000, guid: 8d7f32395b99cb446acf0be452ad1804, type: 3}
   m_SpriteCharacterTable:
   - m_ElementType: 2
     m_Unicode: 65534
@@ -73,6 +73,21 @@ MonoBehaviour:
     m_GlyphIndex: 6
     m_Scale: 1.5
     m_Name: greater_potion
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 14
+    m_Scale: 1
+    m_Name: warp_crystal
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 15
+    m_Scale: 1
+    m_Name: glory_warp
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 16
+    m_Scale: 1
+    m_Name: landmine
   m_GlyphTable:
   - m_Index: 0
     m_Metrics:
@@ -186,6 +201,54 @@ MonoBehaviour:
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
     sprite: {fileID: -1212629919, guid: bac82c14f35abaa419d7d5bfdbe0c6d0, type: 3}
+  - m_Index: 14
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: -64
+      m_HorizontalBearingY: 64
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 384
+      m_Y: 256
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 1684774877, guid: 8d7f32395b99cb446acf0be452ad1804, type: 3}
+  - m_Index: 15
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: -64
+      m_HorizontalBearingY: 64
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 128
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 1773550261, guid: 8d7f32395b99cb446acf0be452ad1804, type: 3}
+  - m_Index: 16
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: -64
+      m_HorizontalBearingY: 64
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 128
+      m_Y: 128
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 206662053, guid: 8d7f32395b99cb446acf0be452ad1804, type: 3}
   spriteInfoList: []
   fallbackSpriteAssets: []
 --- !u!21 &2327719356466707684
@@ -212,7 +275,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: bac82c14f35abaa419d7d5bfdbe0c6d0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8d7f32395b99cb446acf0be452ad1804, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []

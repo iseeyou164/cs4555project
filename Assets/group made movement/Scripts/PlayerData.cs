@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.ProBuilder.MeshOperations;
 using static TurnMenu;
 using static UnityEditor.Rendering.CameraUI;
+using static UnityEngine.GraphicsBuffer;
 
 public class PlayerData : MonoBehaviour
 {
@@ -331,8 +332,55 @@ public class PlayerData : MonoBehaviour
             Debug.Log($"{playerName} used Custom Dice! They can choose their dice roll this turn.");
             dummy = true;
         }
+        else if (itemName == "Warp Crystal")
+        {
+            //get this player's current tile index in board walk
+            //then set this player's current tile index to the random target player's current tile index index
+            //then set the random target player's current tile index to random_dummy 
+            //then run teleport to file function for both players
+            PlayerData random_target = this;
+            while (random_target == this)
+            {
+                random_target = PlayerManager.Instance.GetPlayer(Random.Range(0, PlayerManager.Instance.players.Count));
+            }
 
-            yield return new WaitUntil(() => dummy);
+            BoardWalk myBW = GetComponent<BoardWalk>();
+            BoardWalk targetBW = random_target.GetComponent<BoardWalk>();
+
+            int myTile = myBW.currentTileIndex;
+            int theirTile = targetBW.currentTileIndex;
+
+            myBW.currentTileIndex = theirTile;
+            targetBW.currentTileIndex = myTile;
+
+            yield return StartCoroutine(myBW.TeleportToTile(theirTile));
+            yield return StartCoroutine(targetBW.TeleportToTile(myTile));
+
+            yield return DialogManager.Instance.ShowMessageAndWait($"{playerName} swapped with {random_target.playerName}!");
+
+            Debug.Log($"{playerName} used Warp Crystal! They can swap places with a random player.");
+            dummy = true;
+        }
+        else if (itemName == "Glory Warp")
+        {
+            BoardWalk myBW = GetComponent<BoardWalk>();
+            int gloryTile = GloryManager.Instance.currentGloryTileIndex;
+            myBW.currentTileIndex = gloryTile;
+            yield return StartCoroutine(myBW.TeleportToTile(gloryTile-1));
+            //set player's current tile index to the current tile index of current active glory tile
+            // then run teleport to file function for this player
+            yield return DialogManager.Instance.ShowMessageAndWait($"{playerName} teleported to the Glory Tile!");
+            Debug.Log($"{playerName} used Glory Warp! They can teleport to the Glory tile.");
+            dummy = true;
+        }
+        else if (itemName == "Landmine")
+        {
+            //do this if you want. not needed
+            Debug.Log($"{playerName} used Landmine! They set up a trap.");
+            dummy = true;
+        }
+
+        yield return new WaitUntil(() => dummy);
         //Remove 1 item from inventory with the same name.
         RemoveItemSpecific(itemName);
         usedItem = true;
@@ -367,6 +415,18 @@ public class PlayerData : MonoBehaviour
         else if (itemName == "Lucky Dice")
         {
             desc = "Manually choose 1-10 for this turn's movement.";
+        }
+        else if (itemName == "Warp Crystal")
+        {
+            desc = "Swaps position with a random player.";
+        }
+        else if (itemName == "Glory Warp")
+        {
+            desc = "Teleports to the Glory tile.";
+        }
+        else if (itemName == "Landmine")
+        {
+            desc = "Sets up a trap. Explodes player that passes/lands on it.";
         }
         return desc;
     }
@@ -501,6 +561,15 @@ public class PlayerData : MonoBehaviour
                         break;
                     case "Lucky Dice":
                         itemDisplay += "<sprite name=\"lucky_dice\">";
+                        break;
+                    case "Warp Crystal":
+                        itemDisplay += "<sprite name=\"warp_crystal\">";
+                        break;
+                    case "Glory Warp":
+                        itemDisplay += "<sprite name=\"glory_warp\">";
+                        break;
+                    case "Landmine":
+                        itemDisplay += "<sprite name=\"landmine\">";
                         break;
                     default:
                         itemDisplay += "";

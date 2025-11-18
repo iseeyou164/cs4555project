@@ -19058,6 +19058,7 @@ MonoBehaviour:
   - {fileID: 1992151695}
   - {fileID: 1852802316}
   gloryParticlePrefab: {fileID: 3953508541292416784, guid: 6d525f1d185e0a4439e97509883d45df, type: 3}
+  currentGloryTileIndex: 0
 --- !u!114 &285516940
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30759,6 +30760,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 13
   isActive: 0
   gloryCost: 20
   gloryChest: {fileID: 1103826984}
@@ -44699,6 +44701,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 59
   isActive: 0
   gloryCost: 20
   gloryChest: {fileID: 50214442}
@@ -101874,6 +101877,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 39
   isActive: 0
   gloryCost: 20
   gloryChest: {fileID: 436657954}
@@ -125992,6 +125996,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 77
   isActive: 0
   gloryCost: 20
   gloryChest: {fileID: 1237269170}
@@ -135123,6 +135128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 74
   isActive: 0
   gloryCost: 20
   gloryChest: {fileID: 1226967311}
@@ -139369,8 +139375,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc0bfb945762964389aedff9a14cb9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloryTile
+  tile_id: 0
   isActive: 0
-  gloryCost: 20
+  gloryCost: 25
   gloryChest: {fileID: 282980606}
 --- !u!1001 &2056093184
 PrefabInstance:

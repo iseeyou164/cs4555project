@@ -79,7 +79,21 @@ public class TrapIDManager : MonoBehaviour
 
         yield return new WaitUntil(() => finished);
 
-        if (result >= 10)
+        if (result >= 20)
+        {
+            SoundManager.Instance.Play("generic_dodge");
+            SoundManager.Instance.Play("generic_glory");
+            yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You dodged successfully and gained a Glory Crystal!");
+            player.GetComponent<PlayerData>().AddItem("Glory Warp");
+        }
+        else if (result >= 17)
+        {
+            SoundManager.Instance.Play("generic_dodge");
+            SoundManager.Instance.Play("generic_glory");
+            yield return DialogManager.Instance.ShowMessageAndWait($"[Greate Success!] You rolled {result}! You dodged successfully and gained a Warp Crystal!");
+            player.GetComponent<PlayerData>().AddItem("Warp Crystal");
+        }
+        else if (result >= 10)
         {
             SoundManager.Instance.Play("generic_dodge");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You dodged successfully!");
