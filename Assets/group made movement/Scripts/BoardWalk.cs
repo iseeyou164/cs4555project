@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BoardWalk : MonoBehaviour
 {
@@ -12,7 +13,27 @@ public class BoardWalk : MonoBehaviour
 
     public int currentTileIndex = 0;
     public bool isMoving = false;
-
+    void Start()
+    {
+        if (GameSettings.Instance != null)
+        {
+            tiles = GameSettings.Instance.tiles;
+        }
+        else
+        {
+            Debug.LogError("GameSettings.Instance is NULL! Make sure GameSettings is in the scene.");
+            return;
+        }
+        if (GameState.playerTileIndices.ContainsKey(gameObject.name))
+        {
+            currentTileIndex = GameState.playerTileIndices[gameObject.name];
+            transform.position = tiles[currentTileIndex].position;
+        }
+        else
+        {
+            GameState.playerTileIndices.Add(gameObject.name, currentTileIndex);
+        }
+    }
     private void Awake()
     {
         tiles = GameSettings.Instance.tiles;
@@ -170,10 +191,26 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("red_tile"))
         {
-            SoundManager.Instance.Play("choice_error");
-            /* Combat or Obstacle Tile? Could start a fight?*/
             Debug.Log("Landed on red tile. Initiate combat ");
-            EventManager.IsEventRunning = false;
+            if (currentTileIndex < 8) GameState.enemyToSpawn = "Skeleton";
+            else if (currentTileIndex >= 8 && currentTileIndex < 20) GameState.enemyToSpawn = "Turtle";
+            else if (currentTileIndex >= 21 && currentTileIndex <= 50) GameState.enemyToSpawn = "Orc";
+            else if (currentTileIndex > 50) GameState.enemyToSpawn = "Golem";
+            foreach (var player in TurnManager.Instance.players)
+            {
+                if (GameState.playerTileIndices.ContainsKey(player.name))
+                {
+                    GameState.playerTileIndices[player.name] = player.currentTileIndex;
+                }
+                else
+                {
+                    GameState.playerTileIndices.Add(player.name, player.currentTileIndex);
+                }
+            }
+            GameState.currentPlayerIndex = TurnManager.Instance.currentPlayerIndex;
+            GameState.returningFromBattle = true;
+
+            SceneManager.LoadScene("battle scene");
         }
         else if (tile.CompareTag("green_tile"))
         {
