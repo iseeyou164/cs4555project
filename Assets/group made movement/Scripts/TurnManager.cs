@@ -10,7 +10,7 @@ public class TurnManager : MonoBehaviour
 
     [Header("Players")]
     public List<BoardWalk> players; // your player objects
-    private int currentPlayerIndex = 0;
+    public int currentPlayerIndex = 0;
 
     [Header("Dice")]
     public int diceCount = 1;
@@ -63,6 +63,13 @@ public class TurnManager : MonoBehaviour
         //turnActive = false;
         focusCam = FindFirstObjectByType<FocusCamera>();
         turnMenu = FindFirstObjectByType<TurnMenu>();
+        if (GameState.returningFromBattle)
+        {
+            Debug.Log("Returning from Battle...");
+            currentPlayerIndex = GameState.currentPlayerIndex;
+            GameState.returningFromBattle = false;
+            NextTurn();
+        }
         turnMenu.RefreshPlayer();
         StartCoroutine(GameLoop());
     }
