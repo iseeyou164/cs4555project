@@ -43,6 +43,14 @@ public class RewardIDManager : MonoBehaviour
                 //asks the player to gamble any amount of gold. Default is 0. Use A to increment & D to decrement. Use Space to select.
                 yield return Gambler(player);
                 break;
+            case 3:
+                Debug.Log("Reward 3: Goblin Treasure");
+                yield return GoblinCamp(player);
+                break;
+            case 4:
+                Debug.Log("Reward 4: Broken Cart");
+                yield return BrokenCart(player);
+                break;
             default:
                 Debug.Log("Reward ?");
                 player.EndTileEffect();
@@ -140,27 +148,33 @@ public class RewardIDManager : MonoBehaviour
             //give rewards
             if (result >= 20)
             {
+                SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You gained 1 Glory!");
                 player.GetComponent<PlayerData>().AddGlory(1);
             }
             else if (result <= 1)
             {
+                SoundManager.Instance.Play("choice_error");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! The chest exploded! You lose 10 health!");
                 //play some explosion effect?
+                ParticleManager.Instance.Play("explosion", player.transform.position);
                 player.GetComponent<PlayerData>().gainHealth(-10);
             }
-            else if (1 < result && result <= 5)
+            else if (1 < result && result <= 3)
             {
+                //SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You gained nothing...");
             }
-            else if (5 < result && result <= 10)
+            else if (4 < result && result <= 9)
             {
+                SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You gained {result} gold!");
                 player.GetComponent<PlayerData>().AddGold(result);
             }
             else
             {
-                //11->19
+                //10->19
+                SoundManager.Instance.Play("generic_glory");
                 string randomItem = string.Empty;
                 if (result >= 18)
                 {
@@ -170,7 +184,7 @@ public class RewardIDManager : MonoBehaviour
                 {
                     randomItem = "Double Dice";
                 }
-                else if (result >= 13)
+                else if (result >= 12)
                 {
                     randomItem = "Potion";
                 }
@@ -239,7 +253,7 @@ public class RewardIDManager : MonoBehaviour
         if (choice == 0)
         {
             yield return DialogManager.Instance.ShowMessageAndWait("Press SPACE to roll a d20. Effects are based on result!");
-
+            ParticleManager.Instance.Play("wood", player.transform.position);
             bool finished = false;
             int result = 0;
 
@@ -262,11 +276,13 @@ public class RewardIDManager : MonoBehaviour
             }
             else if (result <= 1)
             {
+                SoundManager.Instance.Play("choice_error");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! The mushroom contained lethal poison! You take 20 damage!");
                 player.GetComponent<PlayerData>().gainHealth(-20);
             }
             else if (1 < result && result <= 5)
             {
+                SoundManager.Instance.Play("generic_poison");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! The mushroom contained poison! You are poisoned for 3 turns!");
                 player.GetComponent<PlayerData>().ApplyEffect("Poison", 3);
             }
@@ -373,18 +389,20 @@ public class RewardIDManager : MonoBehaviour
             if (player_result > gambler_result)
             {
                 //win
+                SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player_result}! You win {amount_to_gamble * 2} gold!");
                 player.GetComponent<PlayerData>().AddGold(amount_to_gamble * 2);
             }
             else if (player_result < gambler_result)
             {
                 //lose
+                SoundManager.Instance.Play("choice_error");
                 yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player_result}! You lost your gold!");
             }
             else
             {
                 //tie
-                yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player}! We tie! Take back your gold!");
+                yield return DialogManager.Instance.ShowMessageAndWait($"Gambler: I rolled {gambler_result}!\nYou rolled {player_result}! We tie! Take back your gold!");
                 player.GetComponent<PlayerData>().AddGold(amount_to_gamble);
             }
 
@@ -401,4 +419,263 @@ public class RewardIDManager : MonoBehaviour
         player.EndTileEffect();
     }
 
+    private IEnumerator GoblinCamp(BoardWalk player)
+    {
+        yield return new WaitForSeconds(0.25f);
+        SoundManager.Instance.Play("generic_goblin");
+        yield return DialogManager.Instance.ShowMessageAndWait($"You spot a horde of treasure in the goblin camp.");
+
+        if (rewardEffectPrefab != null)
+        {
+            GameObject effect = Instantiate(rewardEffectPrefab, player.transform.position + Vector3.up * 1f, Quaternion.identity);
+            Destroy(effect, 0.5f);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        int choice = -1;
+
+        yield return DialogManager.Instance.ShowBinaryChoiceAndWait(
+            "Do you want to try stealing it?",
+            "Steal",
+            "Ignore",
+            (bool choiceASelected) =>
+            {
+                if (choiceASelected)
+                {
+                    Debug.Log("Player chose Yes");
+                    choice = 0;
+                }
+                else
+                {
+                    Debug.Log("Player chose No");
+                    choice = 1;
+                }
+            }
+        );
+
+        yield return new WaitUntil(() => choice == 0 || choice == 1);
+
+        if (choice == 0)
+        {
+            yield return DialogManager.Instance.ShowMessageAndWait("Press SPACE to roll a d20. Outcomes are based on result!");
+
+            bool finished = false;
+            int result = 0;
+            int goblin_loot = 0;
+
+            // Roll a visual d20
+            yield return DiceRoller.Instance.StartCoroutine(
+                DiceRoller.Instance.RollDiceVisual(20, 1, (total) =>
+                {
+                    result = total;
+                    finished = true;
+                })
+            );
+
+            yield return new WaitUntil(() => finished);
+
+            //give rewards
+            if (result >= 20)
+            {
+                SoundManager.Instance.Play("generic_flee");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You stole all their treasure!");
+                goblin_loot = 4;
+            }
+            else if (result <= 1)
+            {
+                SoundManager.Instance.Play("generic_slash");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! You were brutally slain in the process!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().gainHealth(-20);
+            }
+            else if (1 < result && result <= 5)
+            {
+                SoundManager.Instance.Play("generic_flee");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You barely escaped, but lost {11 - result} health!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().gainHealth(-(11-result));
+            }
+            else if (5 < result && result <= 10)
+            {
+                SoundManager.Instance.Play("generic_flee");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Minor Fail] You rolled {result}! You barely escaped with a few treasures, but lost {11 - result} health!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().gainHealth(-(11-result));
+                goblin_loot = 1;
+            }
+            else if (11 < result && result <= 15)
+            {
+                SoundManager.Instance.Play("generic_flee");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You managed to steal a few treasures!");
+                goblin_loot = 1;
+            }
+            else if (15 < result && result <= 19)
+            {
+                SoundManager.Instance.Play("generic_flee");
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Great Success!] You rolled {result}! You managed to steal most of their treasures!");
+                goblin_loot = 2;
+            }
+
+            yield return new WaitForSeconds(0.5f);
+
+            //get rewards
+            for(int i = 0; i < goblin_loot; i++)
+            {
+                SoundManager.Instance.Play("generic_glory");
+                int loot = Random.Range(1, 7);
+                switch (loot)
+                {
+                    case 1:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You got 5 gold!");
+                        player.GetComponent<PlayerData>().AddGold(5);
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    case 2:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You got a Potion!");
+                        player.GetComponent<PlayerData>().AddItem("Potion");
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    case 3:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You got a Double Dice!");
+                        player.GetComponent<PlayerData>().AddItem("Double Dice");
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    case 4:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You got a Triple Dice!");
+                        player.GetComponent<PlayerData>().AddItem("Triple Dice");
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    case 5:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You got 10 gold!");
+                        player.GetComponent<PlayerData>().AddGold(10);
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                    case 6:
+                        yield return DialogManager.Instance.ShowMessageAndWait($"You a Greater Potion!");
+                        player.GetComponent<PlayerData>().AddItem("Greater Potion");
+                        yield return new WaitForSeconds(0.5f);
+                        break;
+                }
+            }
+
+        }
+        else
+        {
+            SoundManager.Instance.Play("generic_flee");
+            yield return DialogManager.Instance.ShowMessageAndWait("You decided to ignore the camp and sneak away.");
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        Debug.Log("Reward Finished");
+        EventManager.IsEventRunning = false;
+        player.EndTileEffect();
+    }
+
+    private IEnumerator BrokenCart(BoardWalk player)
+    {
+        yield return DialogManager.Instance.ShowMessageAndWait($"You spot a broken cart with a person searching for something.");
+        yield return new WaitForSeconds(0.5f);
+        yield return DialogManager.Instance.ShowMessageAndWait($"Troubled Man: My cart crashed earlier. Mind helping me search for my stuff? I'll give you something in return.");
+
+        if (rewardEffectPrefab != null)
+        {
+            GameObject effect = Instantiate(rewardEffectPrefab, player.transform.position + Vector3.up * 1f, Quaternion.identity);
+            Destroy(effect, 0.5f);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        int choice = -1;
+
+        yield return DialogManager.Instance.ShowBinaryChoiceAndWait(
+            "Do you want to help him out?",
+            "Accept",
+            "Decline",
+            (bool choiceASelected) =>
+            {
+                if (choiceASelected)
+                {
+                    Debug.Log("Player chose Yes");
+                    choice = 0;
+                }
+                else
+                {
+                    Debug.Log("Player chose No");
+                    choice = 1;
+                }
+            }
+        );
+
+        yield return new WaitUntil(() => choice == 0 || choice == 1);
+
+        if (choice == 0)
+        {
+            yield return DialogManager.Instance.ShowMessageAndWait("Press SPACE to roll a d20. Outcomes are based on result!");
+
+            bool finished = false;
+            int result = 0;
+
+            // Roll a visual d20
+            yield return DiceRoller.Instance.StartCoroutine(
+                DiceRoller.Instance.RollDiceVisual(20, 1, (total) =>
+                {
+                    result = total;
+                    finished = true;
+                })
+            );
+
+            yield return new WaitUntil(() => finished);
+
+            //give rewards
+            if (result >= 20)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You helped the man who is a Noble! Gain 1 Glory!");
+                player.GetComponent<PlayerData>().AddGlory(1);
+            }
+            else if (result <= 1)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! You were tricked by a bandit and lost 10 gold!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().AddGold(-10);
+            }
+            else if (1 < result && result <= 5)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You were tricked by a bandit and lost {6-result} health while escaping!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().gainHealth(-(6 - result));
+            }
+            else if (5 < result && result <= 10)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Minor Success] You rolled {result}! You helped the man who is a Merchant! Gain {result} gold!");
+                SoundManager.Instance.Play("generic_glory");
+                player.GetComponent<PlayerData>().AddGold(result);
+            }
+            else if (11 < result && result <= 15)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You helped the man who is a Priest! Gain a Greater Potion!");
+                SoundManager.Instance.Play("generic_glory");
+                player.GetComponent<PlayerData>().AddItem("Greater Potion");
+            }
+            else if (15 < result && result <= 19)
+            {
+                yield return DialogManager.Instance.ShowMessageAndWait($"[Great Success!] You rolled {result}! You helped the man who is an Adventurer! Gain a Triple Dice!");
+                SoundManager.Instance.Play("generic_glory");
+                player.GetComponent<PlayerData>().AddItem("Triple Dice");
+            }
+
+            yield return new WaitForSeconds(0.5f);
+
+        }
+        else
+        {
+            SoundManager.Instance.Play("generic_flee");
+            yield return DialogManager.Instance.ShowMessageAndWait("You decided to decline and move on.");
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        Debug.Log("Reward Finished");
+        EventManager.IsEventRunning = false;
+        player.EndTileEffect();
+    }
 }

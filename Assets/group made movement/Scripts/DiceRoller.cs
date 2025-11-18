@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Rendering.Analytics;
 using UnityEngine;
 
 public class DiceRoller : MonoBehaviour
@@ -32,6 +33,7 @@ public class DiceRoller : MonoBehaviour
 
     public IEnumerator RollDiceVisual(int sides, int rolls, System.Action<int> onResult)
     {
+        SoundManager.Instance.Play("generic_clank");
         //get prefab for dice
         GameObject diceData = dicePrefabs.Find(d => d.name.ToLower().Contains($"d{sides}"));
         if (diceData == null)
@@ -112,20 +114,18 @@ public class DiceRoller : MonoBehaviour
             }
         }
 
-
-
-        //foreach (var die in spawnedDice)
-        //{
-        //    total += die.FinalValue;
-        //}
-
-
-        //for (int i = 0; i < rolls; i++)
-        //{
-        //    int value = Random.Range(1, sides + 1);
-        //    total += value;
-        //}
-        Debug.Log($"Total roll result with (d{sides} x{rolls}): {total}");
+        if (TurnManager.Instance.GetCurrentPlayer().moveBonus!=0)
+        {
+            DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {TurnManager.Instance.GetCurrentPlayer().playerName}'s turn.\n" +
+            $"Roll: {total} + {TurnManager.Instance.GetCurrentPlayer().moveBonus}\n");
+            total += TurnManager.Instance.GetCurrentPlayer().moveBonus;
+        }
+        else
+        {
+            DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {TurnManager.Instance.GetCurrentPlayer().playerName}'s turn.\n" +
+            $"Roll: {total}\n");
+        }
+            Debug.Log($"Total roll result with (d{sides} x{rolls}): {total}");
         onResult?.Invoke(total);
 
         // clean up after a delay
@@ -162,6 +162,74 @@ public class DiceRoller : MonoBehaviour
 
         // Return results
         onComplete?.Invoke(playerResult, gamblerResult);
+    }
+
+    public IEnumerator RollDamage(int damageStat, System.Action<int> onComplete)
+    {
+        int guaranteed_bonus = 0;
+        int number_of_6dice = 1;
+        int number_of_20dice = 0;
+        int total_damage = 0;
+
+        //calculates dice damage (25)
+        while (damageStat > 0)
+        {
+            if(damageStat >= 10)
+            {
+                number_of_20dice++;
+                damageStat -= 10;
+            }
+            else if (damageStat >= 3)
+            {
+                number_of_6dice++;
+                damageStat -= 3;
+            }
+            else
+            {
+                guaranteed_bonus += 1;
+                damageStat -= 1;
+            }
+        }
+
+        if (number_of_20dice > 0)
+        {
+            yield return StartCoroutine(RollDiceVisual(20, number_of_20dice, (value) =>
+            {
+                total_damage += value;
+                Debug.Log("Player rolled: " + value);
+            }));
+        }
+        if(number_of_6dice > 0)
+        {
+            yield return StartCoroutine(RollDiceVisual(6, number_of_6dice, (value) =>
+            {
+                total_damage += value;
+                Debug.Log("Player rolled: " + value);
+            }));
+        }
+        total_damage += guaranteed_bonus;
+
+        //for(int i = 0;  i < number_of_20dice; i++)
+        //{
+        //    yield return StartCoroutine(RollDiceVisual(20, 1, (value) =>
+        //    {
+        //        total_damage += value;
+        //        Debug.Log("Player rolled: " + value);
+        //    }));
+        //}
+
+        //for(int i = 0; i < number_of_6dice; i++)
+        //{
+        //    yield return StartCoroutine(RollDiceVisual(6, 1, (value) =>
+        //    {
+        //        total_damage += value;
+        //        Debug.Log("Player rolled: " + value);
+        //    }));
+        //}
+
+        //25 Attack Stat = 2d20 + 1d6 + 2 total damage
+        //25 - 10(2) - 3(1) - 2 = 0
+        onComplete?.Invoke(total_damage);
     }
 
 

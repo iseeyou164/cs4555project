@@ -38,8 +38,8 @@ public class SplitIDManager : MonoBehaviour
         // Ask player which direction to go
         yield return DialogManager.Instance.ShowBinaryChoiceAndWait(
             "Choose your path!",
-            "Path A",
-            "Path B",
+            "Black Path",
+            "White Path",
             (bool choiceASelected) =>
             {
                 chosenIndex = choiceASelected ? splitTile.optionAIndex : splitTile.optionBIndex;

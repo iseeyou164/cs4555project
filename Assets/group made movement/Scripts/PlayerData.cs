@@ -2,8 +2,10 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.ProBuilder.MeshOperations;
 using static TurnMenu;
 using static UnityEditor.Rendering.CameraUI;
+using static UnityEngine.GraphicsBuffer;
 
 public class PlayerData : MonoBehaviour
 {
@@ -26,6 +28,8 @@ public class PlayerData : MonoBehaviour
 
     [Header("Player Info")]
     public string playerName;
+    private int score;
+    private int placement;
 
     [Header("Other Data")]
     public int minMoveRoll = 1;
@@ -48,10 +52,12 @@ public class PlayerData : MonoBehaviour
         health = 20;
         gold = 10;
         glory = 0;
+        score = 0;
+        placement = 1;
         usedItem = false;
         items = new string[3];
 
-        PlayerManager.Instance.RegisterPlayer(this);
+        //PlayerManager.Instance.RegisterPlayer(this);
 
         if (statsText == null)
         {
@@ -88,6 +94,10 @@ public class PlayerData : MonoBehaviour
         // Animate until we hit target
         while (gold != target)
         {
+            if (amount > 0)
+            {
+                SoundManager.Instance.Play("generic_money");
+            }
             gold += step;
 
             UpdateStatusUI();
@@ -103,6 +113,7 @@ public class PlayerData : MonoBehaviour
         {
             for (int i = 0; i < amount; i++)
             {
+                SoundManager.Instance.Play("generic_glory2");
                 glory += 1;
             }
 
@@ -123,6 +134,14 @@ public class PlayerData : MonoBehaviour
             // POP UP DIALOGUE
             Debug.Log($"Player lost {-amount} glory. Total: {glory}");
         }
+
+        //if (glory >= GameSettings.Instance.glory_to_win)
+        //{
+        //    //run gameend function in turn manager
+        //    //TurnManager.Instance.EndGame(this);
+        //    StartCoroutine(TurnManager.Instance.EndGame(this));
+        //}
+
         UpdateStatusUI();
 
     }
@@ -151,28 +170,41 @@ public class PlayerData : MonoBehaviour
 
     public void gainHealth(int amount)
     {
-        health += amount;
-        Debug.Log($"Player lost {amount} HP. Remaining: {health}/{maxHealth} HP");
-        if (health < 0)
+        if (amount < 0) ParticleManager.Instance.Play("blood", transform.position);
+
+        if (amount <= -20)
         {
-            //Teleport to start
-            //Lose 50% gold
-            int deduct = gold / 2;
-            gold = gold - deduct;
-            //clear misc effects
-            poisonDuration = 0;
-            Debug.Log($"Player lost all HP. Loses {deduct} gold. Remaining: {gold}");
-            BoardWalk player = GetComponent<BoardWalk>();
-            if (player != null)
-            {
-                player.TeleportToTile(2); // send to start tile
-            }
-            else
-            {
-                Debug.LogWarning("No BoardWalk component found on player!");
-            }
-            health = maxHealth;
+            SoundManager.Instance.Play("generic_die");
+        }
+        else if (amount <= -15)
+        {
+            SoundManager.Instance.Play("generic_slash");
+        }
+        else if (amount <= -10)
+        {
+            SoundManager.Instance.Play("generic_heavyblow");
+        }
+        else if (amount <= -5)
+        {
+            SoundManager.Instance.Play("generic_claw");
+        }
+        else if (amount <= -1)
+        {
+            SoundManager.Instance.Play("generic_bite");
+        }
+        else
+        {
+            SoundManager.Instance.Play("generic_heal");
+        }
+
+            health += amount;
+        Debug.Log($"Player lost {amount} HP. Remaining: {health}/{maxHealth} HP");
+        if (health <= 0)
+        {
+            //health = maxHealth;
+            SoundManager.Instance.Play("generic_die");
             //UpdateStatusUI();
+            StartCoroutine(Die());
         }
 
         if (health > maxHealth)
@@ -183,10 +215,42 @@ public class PlayerData : MonoBehaviour
         UpdateStatusUI();
     }
 
+    public IEnumerator Die()
+    {
+        //Teleport to start
+        //Lose 50% gold
+        int deduct = gold / 2;
+        gold = gold - deduct;
+        if (gold < 0)
+        {
+            gold = 0;
+        }
+        //clear misc effects
+        poisonDuration = 0;
+        yield return DialogManager.Instance.ShowMessageAndWait($"Player lost all HP. Loses {deduct} gold. Remaining: {gold}");
+        BoardWalk player = GetComponent<BoardWalk>();
+        if (player != null)
+        {
+            yield return player.TeleportToTile(0); // send to start tile
+        }
+        else
+        {
+            Debug.LogWarning("No BoardWalk component found on player!");
+        }
+        health = maxHealth;
+    }
+
+    public int calculateScore()
+    {
+        score = (glory * 100000) + (gold * 100) + (health);
+        return score;
+    }
+
     public void ApplyEffect(string effectName, int duration)
     {
         if (effectName == "Poison")
         {
+            SoundManager.Instance.Play("generic_poison");
             poisonDuration += duration;
         }
         else
@@ -202,6 +266,7 @@ public class PlayerData : MonoBehaviour
 
     public IEnumerator UseItem(string itemName)
     {
+        SoundManager.Instance.Play("generic_useitem");
         bool dummy = false;
         if (itemName == "Pixie Dust")
         {
@@ -237,7 +302,7 @@ public class PlayerData : MonoBehaviour
                 })
             );
             yield return new WaitUntil(() => finished);
-            health += result;
+            gainHealth(result);
             yield return DialogManager.Instance.ShowMessageAndWait($"You healed {result} health!");
             dummy = true;
         }
@@ -257,34 +322,113 @@ public class PlayerData : MonoBehaviour
                 })
             );
             yield return new WaitUntil(() => finished);
-            health += result;
+            gainHealth(result);
             yield return DialogManager.Instance.ShowMessageAndWait($"You healed {result} health!");
             dummy = true;
         }
         else if (itemName == "Lucky Dice")
         {
-            //    yield return DialogManager.Instance.ShowAmountChoiceAndWait(
-            //    "Gambler: Would you like to gamble your hard-earned gold? You can maybe double it!",
-            //    "-1!",
-            //    "+1!",
-            //    1,
-            //    10,
-            //    (int value) =>
-            //    {
-            //        amount_to_gamble += value;
-            //        player.GetComponent<PlayerData>().AddGold(-amount_to_gamble);
-            //    }
-            //);
             diceCount = -1;
             Debug.Log($"{playerName} used Custom Dice! They can choose their dice roll this turn.");
             dummy = true;
         }
+        else if (itemName == "Warp Crystal")
+        {
+            //get this player's current tile index in board walk
+            //then set this player's current tile index to the random target player's current tile index index
+            //then set the random target player's current tile index to random_dummy 
+            //then run teleport to file function for both players
+            PlayerData random_target = this;
+            while (random_target == this)
+            {
+                random_target = PlayerManager.Instance.GetPlayer(Random.Range(0, PlayerManager.Instance.players.Count));
+            }
 
-            yield return new WaitUntil(() => dummy);
+            BoardWalk myBW = GetComponent<BoardWalk>();
+            BoardWalk targetBW = random_target.GetComponent<BoardWalk>();
+
+            int myTile = myBW.currentTileIndex;
+            int theirTile = targetBW.currentTileIndex;
+
+            myBW.currentTileIndex = theirTile;
+            targetBW.currentTileIndex = myTile;
+
+            yield return StartCoroutine(myBW.TeleportToTile(theirTile));
+            yield return StartCoroutine(targetBW.TeleportToTile(myTile));
+
+            yield return DialogManager.Instance.ShowMessageAndWait($"{playerName} swapped with {random_target.playerName}!");
+
+            Debug.Log($"{playerName} used Warp Crystal! They can swap places with a random player.");
+            dummy = true;
+        }
+        else if (itemName == "Glory Warp")
+        {
+            BoardWalk myBW = GetComponent<BoardWalk>();
+            int gloryTile = GloryManager.Instance.currentGloryTileIndex;
+            myBW.currentTileIndex = gloryTile;
+            yield return StartCoroutine(myBW.TeleportToTile(gloryTile-1));
+            //set player's current tile index to the current tile index of current active glory tile
+            // then run teleport to file function for this player
+            yield return DialogManager.Instance.ShowMessageAndWait($"{playerName} teleported to the Glory Tile!");
+            Debug.Log($"{playerName} used Glory Warp! They can teleport to the Glory tile.");
+            dummy = true;
+        }
+        else if (itemName == "Landmine")
+        {
+            //do this if you want. not needed
+            Debug.Log($"{playerName} used Landmine! They set up a trap.");
+            dummy = true;
+        }
+
+        yield return new WaitUntil(() => dummy);
         //Remove 1 item from inventory with the same name.
         RemoveItemSpecific(itemName);
         usedItem = true;
         UpdateStatusUI();
+    }
+
+    public string getDescription(string itemName)
+    {
+        string desc = "";
+
+
+        if (itemName == "Pixie Dust")
+        {
+            desc = "+3 to this turn's movement.";
+        }
+        else if (itemName == "Double Dice")
+        {
+            desc = "Use 2 dice for this turn's movement.";
+        }
+        else if (itemName == "Triple Dice")
+        {
+            desc = "Use 3 dice for this turn's movement.";
+        }
+        else if (itemName == "Potion")
+        {
+            desc = "Heal equal to d6 result.";
+        }
+        else if (itemName == "Greater Potion")
+        {
+            desc = "Heal equal to d20 result.";
+        }
+        else if (itemName == "Lucky Dice")
+        {
+            desc = "Manually choose 1-10 for this turn's movement.";
+        }
+        else if (itemName == "Warp Crystal")
+        {
+            desc = "Swaps position with a random player.";
+        }
+        else if (itemName == "Glory Warp")
+        {
+            desc = "Teleports to the Glory tile.";
+        }
+        else if (itemName == "Landmine")
+        {
+            desc = "Sets up a trap. Explodes player that passes/lands on it.";
+        }
+        return desc;
     }
 
     public bool AddItem(string itemName)
@@ -305,6 +449,7 @@ public class PlayerData : MonoBehaviour
 
     public void RemoveItem(int slot)
     {
+        //SoundManager.Instance.Play("generic_useitem");
         if (slot >= 0 && slot < items.Length)
         {
             Debug.Log($"Removed {items[slot]} from slot {slot}");
@@ -316,6 +461,7 @@ public class PlayerData : MonoBehaviour
 
     public void RemoveItemSpecific(string itemName)
     {
+        //SoundManager.Instance.Play("generic_useitem");
         for (int i = 0; i < items.Length; i++)
         {
             if (items[i] == itemName)
@@ -337,7 +483,7 @@ public class PlayerData : MonoBehaviour
         int count = 0;
         for (int i = 0; i < items.Length; i++)
         {
-            if (items[i] != null)
+            if (items[i] != null || items[i] == "")
             {
                 count += 1;
             }
@@ -355,6 +501,29 @@ public class PlayerData : MonoBehaviour
             Debug.Log($"{playerName} rolled a {roll} on a d{sides}");
         }
         return total;
+    }
+
+    public void ResetForNewGame()
+    {
+        Debug.LogWarning("Reset");
+        // Basic stats
+        gold = 10;
+        glory = 0;
+        health = 20;
+
+        // Reset poison, shields, etc if you have them
+        poisonDuration = 0;
+        usedItem = false;
+
+        // Clear inventory
+        items[0] = null;
+        items[1] = null;
+        items[2] = null;
+
+        // Move player to starting tile
+        // BoardWalk holds the movement logic, so reset position there
+        BoardWalk bw = GetComponent<BoardWalk>();
+        StartCoroutine(bw.TeleportToTile(0));
     }
 
     //take items list and display appropriate sprites?
@@ -392,6 +561,15 @@ public class PlayerData : MonoBehaviour
                         break;
                     case "Lucky Dice":
                         itemDisplay += "<sprite name=\"lucky_dice\">";
+                        break;
+                    case "Warp Crystal":
+                        itemDisplay += "<sprite name=\"warp_crystal\">";
+                        break;
+                    case "Glory Warp":
+                        itemDisplay += "<sprite name=\"glory_warp\">";
+                        break;
+                    case "Landmine":
+                        itemDisplay += "<sprite name=\"landmine\">";
                         break;
                     default:
                         itemDisplay += "";
