@@ -28,7 +28,20 @@ public class GameSettings : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        //StartCoroutine(StartupRoutine());
+    }
+
+    void Start()
+    {
         StartCoroutine(StartupRoutine());
+        //StartCoroutine(DialogManager.Instance.ShowMainMenuAndWait(
+        //    "Game Settings",
+        //    "Player Count",
+        //    "Round Limit",
+        //    (result) =>
+        //    {
+        //        ApplyPlayerSettings();
+        //    }));
     }
 
     public IEnumerator ShowSettingsMenuAgain()
@@ -50,16 +63,18 @@ public class GameSettings : MonoBehaviour
             "Game Settings:",
             "Player Count",
             "Round Count",
-            (bool choice) =>
+            (int pc) =>
             {
+                player_count = pc;
                 Debug.Log($"Player Count: {player_count}\n" +
                     $"Round Count: {round_limit}\n");
             }
             );
 
         ApplyPlayerSettings();
-        settingsApplied = true;
-        TurnManager.Instance.gaming = true;
+        //settingsApplied = true;
+        //TurnManager.Instance.gaming = true;
+        //TurnManager.Instance.StartAgain();
     }
 
     private IEnumerator StartupRoutine()
@@ -72,17 +87,18 @@ public class GameSettings : MonoBehaviour
             "Game Settings:",
             "Player Count",
             "Round Count",
-            (bool choice) =>
+            (int pc) =>
                 {
+                    player_count = pc;
                     Debug.Log($"Player Count: {player_count}\n" +
                         $"Round Count: {round_limit}");
                 }
             );
 
         ApplyPlayerSettings();
-        settingsApplied = true;
-        TurnManager.Instance.gaming = true;
-        TurnManager.Instance.StartAgain();
+        //settingsApplied = true;
+        //TurnManager.Instance.gaming = true;
+        //TurnManager.Instance.StartAgain();
     }
 
     //private IEnumerator Start()
@@ -132,7 +148,9 @@ public class GameSettings : MonoBehaviour
                 }
             }
         }
+        settingsApplied = true;
         TurnManager.Instance.gaming = true;
+        TurnManager.Instance.StartAgain();
     }
 
 

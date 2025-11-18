@@ -2,6 +2,7 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.ProBuilder.MeshOperations;
 using static TurnMenu;
 using static UnityEditor.Rendering.CameraUI;
 
@@ -92,6 +93,10 @@ public class PlayerData : MonoBehaviour
         // Animate until we hit target
         while (gold != target)
         {
+            if (amount > 0)
+            {
+                SoundManager.Instance.Play("generic_money");
+            }
             gold += step;
 
             UpdateStatusUI();
@@ -107,6 +112,7 @@ public class PlayerData : MonoBehaviour
         {
             for (int i = 0; i < amount; i++)
             {
+                SoundManager.Instance.Play("generic_glory2");
                 glory += 1;
             }
 
@@ -163,11 +169,39 @@ public class PlayerData : MonoBehaviour
 
     public void gainHealth(int amount)
     {
-        health += amount;
+        if (amount < 0) ParticleManager.Instance.Play("blood", transform.position);
+
+        if (amount <= -20)
+        {
+            SoundManager.Instance.Play("generic_die");
+        }
+        else if (amount <= -15)
+        {
+            SoundManager.Instance.Play("generic_slash");
+        }
+        else if (amount <= -10)
+        {
+            SoundManager.Instance.Play("generic_heavyblow");
+        }
+        else if (amount <= -5)
+        {
+            SoundManager.Instance.Play("generic_claw");
+        }
+        else if (amount <= -1)
+        {
+            SoundManager.Instance.Play("generic_bite");
+        }
+        else
+        {
+            SoundManager.Instance.Play("generic_heal");
+        }
+
+            health += amount;
         Debug.Log($"Player lost {amount} HP. Remaining: {health}/{maxHealth} HP");
         if (health <= 0)
         {
             //health = maxHealth;
+            SoundManager.Instance.Play("generic_die");
             //UpdateStatusUI();
             StartCoroutine(Die());
         }
@@ -215,6 +249,7 @@ public class PlayerData : MonoBehaviour
     {
         if (effectName == "Poison")
         {
+            SoundManager.Instance.Play("generic_poison");
             poisonDuration += duration;
         }
         else
@@ -230,6 +265,7 @@ public class PlayerData : MonoBehaviour
 
     public IEnumerator UseItem(string itemName)
     {
+        SoundManager.Instance.Play("generic_useitem");
         bool dummy = false;
         if (itemName == "Pixie Dust")
         {
@@ -265,7 +301,7 @@ public class PlayerData : MonoBehaviour
                 })
             );
             yield return new WaitUntil(() => finished);
-            health += result;
+            gainHealth(result);
             yield return DialogManager.Instance.ShowMessageAndWait($"You healed {result} health!");
             dummy = true;
         }
@@ -285,7 +321,7 @@ public class PlayerData : MonoBehaviour
                 })
             );
             yield return new WaitUntil(() => finished);
-            health += result;
+            gainHealth(result);
             yield return DialogManager.Instance.ShowMessageAndWait($"You healed {result} health!");
             dummy = true;
         }
@@ -301,6 +337,38 @@ public class PlayerData : MonoBehaviour
         RemoveItemSpecific(itemName);
         usedItem = true;
         UpdateStatusUI();
+    }
+
+    public string getDescription(string itemName)
+    {
+        string desc = "";
+
+
+        if (itemName == "Pixie Dust")
+        {
+            desc = "+3 to this turn's movement.";
+        }
+        else if (itemName == "Double Dice")
+        {
+            desc = "Use 2 dice for this turn's movement.";
+        }
+        else if (itemName == "Triple Dice")
+        {
+            desc = "Use 3 dice for this turn's movement.";
+        }
+        else if (itemName == "Potion")
+        {
+            desc = "Heal equal to d6 result.";
+        }
+        else if (itemName == "Greater Potion")
+        {
+            desc = "Heal equal to d20 result.";
+        }
+        else if (itemName == "Lucky Dice")
+        {
+            desc = "Manually choose 1-10 for this turn's movement.";
+        }
+        return desc;
     }
 
     public bool AddItem(string itemName)
@@ -321,6 +389,7 @@ public class PlayerData : MonoBehaviour
 
     public void RemoveItem(int slot)
     {
+        //SoundManager.Instance.Play("generic_useitem");
         if (slot >= 0 && slot < items.Length)
         {
             Debug.Log($"Removed {items[slot]} from slot {slot}");
@@ -332,6 +401,7 @@ public class PlayerData : MonoBehaviour
 
     public void RemoveItemSpecific(string itemName)
     {
+        //SoundManager.Instance.Play("generic_useitem");
         for (int i = 0; i < items.Length; i++)
         {
             if (items[i] == itemName)
@@ -353,7 +423,7 @@ public class PlayerData : MonoBehaviour
         int count = 0;
         for (int i = 0; i < items.Length; i++)
         {
-            if (items[i] != null)
+            if (items[i] != null || items[i] == "")
             {
                 count += 1;
             }

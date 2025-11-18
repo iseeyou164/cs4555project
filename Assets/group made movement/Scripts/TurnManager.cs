@@ -57,6 +57,7 @@ public class TurnManager : MonoBehaviour
         player_count = GameSettings.Instance.player_count;
         current_round = 1;
         max_round = GameSettings.Instance.round_limit;
+        Debug.Log($"-> {player_count} players, {max_round} rounds total!");
         //max_glory = GameSettings.Instance.glory_to_win;
 
         //turnActive = false;
@@ -76,6 +77,7 @@ public class TurnManager : MonoBehaviour
         player_count = GameSettings.Instance.player_count;
         current_round = 1;
         max_round = GameSettings.Instance.round_limit;
+        Debug.Log($"-> {player_count} players, {max_round} rounds total!");
         //max_glory = GameSettings.Instance.glory_to_win;
 
         //turnActive = false;
@@ -117,7 +119,6 @@ public class TurnManager : MonoBehaviour
     {
         //yield return new WaitWhile(() => turnActive=false);
         yield return new WaitWhile(() => EventManager.IsEventRunning);
-
         BoardWalk currentPlayer = players[currentPlayerIndex];
         //yield return new WaitWhile(() => !currentPlayer.isMoving);
         PlayerData playerData = PlayerManager.Instance.GetPlayer(currentPlayerIndex);
@@ -132,7 +133,7 @@ public class TurnManager : MonoBehaviour
         poi.SetTarget(currentPlayer.transform);
         playerData.usedItem = false;
         yield return new WaitForSeconds(0.5f);
-
+        SoundManager.Instance.Play("generic_ping");
         yield return DialogManager.Instance.ShowMessageAndWait($"It's {currentPlayer.name}’s turn!");
 
         //poison effect
@@ -183,8 +184,8 @@ public class TurnManager : MonoBehaviour
     public void NextTurn()
     {
         // Move to next player
-        currentPlayerIndex = (currentPlayerIndex + 1) % player_count;
-        Debug.Log($"Turn: {currentPlayerIndex+1}/{player_count}");
+        currentPlayerIndex = (currentPlayerIndex + 1) % GameSettings.Instance.player_count; ;
+        Debug.Log($"Turn: {currentPlayerIndex+1}/{GameSettings.Instance.player_count}");
 
         // If we wrapped back to 0, all players finished a round
         if (currentPlayerIndex == 0)

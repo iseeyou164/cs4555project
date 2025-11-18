@@ -66,6 +66,7 @@ public class BoardWalk : MonoBehaviour
             //    currentTileIndex++;
             //    yield return new WaitForSeconds(0.1f);
             //}
+            SoundManager.Instance.Play("generic_move");
             steps--;
 
             // Move to currentTileIndex with your MoveToTile coroutine
@@ -86,7 +87,7 @@ public class BoardWalk : MonoBehaviour
         float elapsed = 0f;
 
         // midpoint lifted slightly for arc effect
-        Vector3 midPos = (startPos + endPos) / 2f + Vector3.up * 0.5f;
+        Vector3 midPos = (startPos + endPos) / 2f + Vector3.up * 3.0f;
 
         while (elapsed < duration)
         {
@@ -132,6 +133,7 @@ public class BoardWalk : MonoBehaviour
         {
             if (gloryTile.isActive)
             {
+                SoundManager.Instance.Play("generic_ping");
                 Debug.Log("Landed on a Glory Tile!");
 
                 bool finished = false;
@@ -142,9 +144,21 @@ public class BoardWalk : MonoBehaviour
                 );
                 yield return new WaitUntil(() => finished);
             }
+            else
+            {
+                SoundManager.Instance.Play("choice_move");
+                /* Generic Tile? Maybe give gold when landed on (when that's added?) */
+                BoardWalk currentPlayer = TurnManager.Instance.CurrentPlayer;
+                yield return DialogManager.Instance.ShowMessageAndWait($"{currentPlayer.name} gained 3 gold!");
+                currentPlayer.GetComponent<PlayerData>().AddGold(3);
+                //currentPlayer.GetComponent<PlayerData>().UpdateStatusUI();
+                Debug.Log($"{currentPlayer.GetComponent<PlayerData>().playerName} landed on blue tile +3 Gold!");
+                EventManager.IsEventRunning = false;
+            }
         }
         else if (tile.CompareTag("blue_tile"))
         {
+            SoundManager.Instance.Play("choice_move");
             /* Generic Tile? Maybe give gold when landed on (when that's added?) */
             BoardWalk currentPlayer = TurnManager.Instance.CurrentPlayer;
             yield return DialogManager.Instance.ShowMessageAndWait($"{currentPlayer.name} gained 3 gold!");
@@ -156,12 +170,14 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("red_tile"))
         {
+            SoundManager.Instance.Play("choice_error");
             /* Combat or Obstacle Tile? Could start a fight?*/
             Debug.Log("Landed on red tile. Initiate combat ");
             EventManager.IsEventRunning = false;
         }
         else if (tile.CompareTag("green_tile"))
         {
+            SoundManager.Instance.Play("generic_ping");
             Debug.Log("Landed on green tile. Reward ID: ");
             RewardTile reward = tile.GetComponent<RewardTile>();
             if (reward != null)
@@ -172,6 +188,7 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("yellow_tile"))
         {
+            SoundManager.Instance.Play("generic_ping2");
             //isMoving = true;
             TrapTile trap = tile.GetComponent<TrapTile>();
             if (trap != null)
@@ -208,6 +225,7 @@ public class BoardWalk : MonoBehaviour
 
     public IEnumerator TeleportToTile(int tileIndex)
     {
+        SoundManager.Instance.Play("generic_teleport");
         if (tileIndex < 0 || tileIndex >= tiles.Length) yield break;
 
         currentTileIndex = tileIndex;

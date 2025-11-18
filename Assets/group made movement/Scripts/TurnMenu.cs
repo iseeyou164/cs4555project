@@ -74,8 +74,16 @@ public class TurnMenu : MonoBehaviour
         DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
             $"[W,Up,S,Down] to traverse menu.\n" +
             $"[Space] to select option.\n");
-        if (Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) selectedOption = Mathf.Max(0, selectedOption - 1);
-        if (Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) selectedOption = Mathf.Min(2, selectedOption + 1);
+        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            SoundManager.Instance.Play("choice_move");
+            selectedOption = Mathf.Max(0, selectedOption - 1);
+        }
+        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            SoundManager.Instance.Play("choice_move");
+            selectedOption = Mathf.Min(2, selectedOption + 1);
+        }
 
 
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
@@ -83,16 +91,19 @@ public class TurnMenu : MonoBehaviour
             switch (selectedOption)
             {
                 case 0: // MOVE
+                    SoundManager.Instance.Play("choice_confirm");
                     currentState = MenuState.Move;
                     Debug.Log("Move selected");
                     break;
                 case 1: // ITEM
-                    if (currentPlayer.usedItem == true || currentPlayer.ItemCount()==0)
+                    if (currentPlayer.usedItem == true || currentPlayer.ItemCount()<=0)
                     {
+                        SoundManager.Instance.Play("choice_error");
                         Debug.Log("Item menu disabled. Player has already used item this turn or has no items.");
                     }
                     else
                     {
+                        SoundManager.Instance.Play("choice_confirm");
                         selectedItem = 0;
                         currentState = MenuState.Item;
                         Debug.Log("Item menu opened");
@@ -100,6 +111,7 @@ public class TurnMenu : MonoBehaviour
                     }
                     break;
                 case 2: // MAP
+                    SoundManager.Instance.Play("generic_map");
                     currentState = MenuState.Map;
                     EnterMapView();
                     Debug.Log("Map menu opened");
@@ -160,12 +172,14 @@ public class TurnMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            SoundManager.Instance.Play("choice_confirm");
             currentState = MenuState.None;
             StartCoroutine(RollDiceCoroutine());
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            SoundManager.Instance.Play("choice_back");
             currentState = MenuState.Main;
             Debug.Log("Back to main menu");
         }
@@ -252,25 +266,36 @@ public class TurnMenu : MonoBehaviour
             $"[W,Up,S,Down] to traverse items.\n" +
             $"[Space] to select item.\n" +
             $"[Esc] to return to previous menu.");
-        if (Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) selectedItem = Mathf.Max(0, selectedItem - 1);
-        if (Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) selectedItem = Mathf.Min(2, selectedItem + 1);
+        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            SoundManager.Instance.Play("choice_move");
+            selectedItem = Mathf.Max(0, selectedItem - 1);
+        }
+        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) 
+        {
+            SoundManager.Instance.Play("choice_move");
+            selectedItem = Mathf.Min(2, selectedItem + 1); 
+        }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
             string item = currentPlayer.items[selectedItem];
             if (!string.IsNullOrEmpty(item))
             {
+                SoundManager.Instance.Play("choice_confirm");
                 currentState = MenuState.None;
                 StartCoroutine(UseItemFlow(item));   // <- Run wrapper coroutine
             }
             else
             {
+                SoundManager.Instance.Play("choice_error");
                 Debug.Log("No item in this slot.");
             }
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            SoundManager.Instance.Play("choice_back");
             currentState = MenuState.Main;
         }
 
@@ -319,6 +344,7 @@ public class TurnMenu : MonoBehaviour
         // Exit Map View
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            SoundManager.Instance.Play("choice_back");
             ExitMapView();
         }
     }
@@ -398,6 +424,10 @@ public class TurnMenu : MonoBehaviour
         {
             if (selectedItem == i)
             {
+                DialogManager.Instance.ShowTop($"Round {TurnManager.Instance.current_round} / {GameSettings.Instance.round_limit}: {currentPlayer.playerName}'s turn.\n" +
+                    $"> {currentPlayer.getDescription(currentPlayer.items[i])}\n" +
+                    $"[Space] to use item.\n" +
+                    $"[Esc] to return to previous menu.");
                 output += $"> {currentPlayer.items[i]} <\n";
             }
             else

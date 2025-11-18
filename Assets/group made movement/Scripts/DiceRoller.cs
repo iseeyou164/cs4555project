@@ -32,6 +32,7 @@ public class DiceRoller : MonoBehaviour
 
     public IEnumerator RollDiceVisual(int sides, int rolls, System.Action<int> onResult)
     {
+        SoundManager.Instance.Play("generic_clank");
         //get prefab for dice
         GameObject diceData = dicePrefabs.Find(d => d.name.ToLower().Contains($"d{sides}"));
         if (diceData == null)

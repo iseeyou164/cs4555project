@@ -81,10 +81,12 @@ public class TrapIDManager : MonoBehaviour
 
         if (result >= 10)
         {
+            SoundManager.Instance.Play("generic_dodge");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You dodged successfully!");
         }
         else
         {
+            SoundManager.Instance.Play("generic_error");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You failed to dodge and return to start!");
             yield return player.StartCoroutine(player.TeleportToTile(targetIndex));
             //player.TeleportToTile(targetIndex);
@@ -111,6 +113,7 @@ public class TrapIDManager : MonoBehaviour
 
     private IEnumerator BoulderTrap(BoardWalk player)
     {
+        SoundManager.Instance.Play("generic_rockfall");
         yield return DialogManager.Instance.ShowMessageAndWait("You see a boulder falling on top of you!");
         yield return new WaitForSeconds(0.25f);
         yield return DialogManager.Instance.ShowMessageAndWait("Press SPACE to roll a d20. Roll 10+ to dodge!");
@@ -130,15 +133,37 @@ public class TrapIDManager : MonoBehaviour
         yield return new WaitUntil(() => finished);
         if(result >= 20)
         {
+            SoundManager.Instance.Play("generic_heavyblow");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You destroyed the falling boulder and gained a Lucky Dice!");
             player.GetComponent<PlayerData>().AddItem("Lucky Dice");
         }
         else if (result <= 1)
         {
-            yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! The boulder fell onto you and injured your legs! You are slowed next turn!");
+            SoundManager.Instance.Play("choice_error");
+            ParticleManager.Instance.Play("rock", transform.position);
+            yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! The boulder fell onto you and dealt 10 damage!");
+            int damage = 10;
+            //Spawn the boulder visually above the player
+            if (boulderPrefab != null)
+            {
+                GameObject boulder = Instantiate(boulderPrefab, player.transform.position + Vector3.up * 10f, Quaternion.identity);
+
+                yield return new WaitForSeconds(1.5f);
+                yield return DialogManager.Instance.ShowMessageAndWait($"The boulder crushed you! You take {damage} damage!");
+                ParticleManager.Instance.Play("dust", player.transform.position);
+                player.GetComponent<PlayerData>().gainHealth(-damage);
+
+                Destroy(boulder, 0.5f); // cleanup
+            }
+            else
+            {
+                Debug.LogWarning("Boulder prefab not assigned!");
+                player.GetComponent<PlayerData>().gainHealth(-damage);
+            }
         }
         else if (result >= 10)
         {
+            SoundManager.Instance.Play("generic_dodge");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You dodged successfully!");
         }
         else
@@ -153,7 +178,7 @@ public class TrapIDManager : MonoBehaviour
 
                 yield return new WaitForSeconds(1.5f);
                 yield return DialogManager.Instance.ShowMessageAndWait($"The boulder crushed you! You take {damage} damage!");
-
+                ParticleManager.Instance.Play("dust", player.transform.position);
                 player.GetComponent<PlayerData>().gainHealth(-damage);
 
                 Destroy(boulder, 0.5f); // cleanup
@@ -192,11 +217,13 @@ public class TrapIDManager : MonoBehaviour
 
         if (result >= 20)
         {
+            SoundManager.Instance.Play("generic_gold");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You found {result} gold on the ground!");
             player.GetComponent<PlayerData>().AddGold(result);
         }
         else if (result <= 1)
         {
+            SoundManager.Instance.Play("choice_error");
             int damage = 3;
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! You take {damage} damage and are poisoned for {damage} turn(s)");
 
@@ -221,6 +248,7 @@ public class TrapIDManager : MonoBehaviour
         }
         else
         {
+            SoundManager.Instance.Play("generic_poison");
             int damage = 3;
             yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You are poisoned for {damage} turn(s)!");
 
@@ -244,6 +272,8 @@ public class TrapIDManager : MonoBehaviour
 
     private IEnumerator GoblinTower(BoardWalk player)
     {
+        yield return new WaitForSeconds(0.25f);
+        SoundManager.Instance.Play("generic_goblin");
         yield return DialogManager.Instance.ShowMessageAndWait("You see a goblin readying its bow against you!");
         yield return new WaitForSeconds(0.25f);
         yield return DialogManager.Instance.ShowMessageAndWait("Press SPACE to roll a d20. Roll 10+ to dodge!");
@@ -264,22 +294,29 @@ public class TrapIDManager : MonoBehaviour
 
         if (result >= 20)
         {
+            SoundManager.Instance.Play("generic_dodge");
+            SoundManager.Instance.Play("generic_die");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You parried the arrow and it flew into the goblin, slaying it! Gain a Lucky Dice");
             player.GetComponent<PlayerData>().AddItem("Lucky Dice");
         }
         else if (result <= 1)
         {
+            SoundManager.Instance.Play("choice_error");
+            ParticleManager.Instance.Play("wood", player.transform.position);
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Failure!] You rolled {result}! You were fatally shot in a vital area and are slain!");
             player.GetComponent<PlayerData>().gainHealth(-20);
         }
         else if (1 < result && result <= 9)
         {
-            yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You barely escaped, but lose {11-result} health!");
+            SoundManager.Instance.Play("choice_error");
+            ParticleManager.Instance.Play("wood", player.transform.position);
+            yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You barely escaped, but lost {11-result} health!");
             player.GetComponent<PlayerData>().gainHealth(-(11 - result));
         }
         else if (10 <= result && result <= 19)
         {
-            yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You successfully dodged the arrow!");
+            SoundManager.Instance.Play("generic_dodge");
+            yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You successfully dodged the arrow and fled!");
         }
         Debug.Log("Trap Finished");
         EventManager.IsEventRunning = false;

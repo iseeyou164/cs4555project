@@ -69,7 +69,7 @@ public class DialogManager : MonoBehaviour
 
         // Wait until player presses Space or Enter to continue
         yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
-
+        SoundManager.Instance.Play("choice_move");
         waitingForInput = false;
         ClearMessage();
     }
@@ -91,11 +91,13 @@ public class DialogManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                SoundManager.Instance.Play("choice_confirm");
                 choiceASelected = true;
                 choiceMade = true;
             }
             else if (Input.GetKeyDown(KeyCode.Z))
             {
+                SoundManager.Instance.Play("choice_back");
                 choiceASelected = false;
                 choiceMade = true;
             }
@@ -132,6 +134,7 @@ public class DialogManager : MonoBehaviour
             // decrement
             if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
+                SoundManager.Instance.Play("choice_move");
                 if (value > min_amount)
                 {
                     value--;
@@ -152,6 +155,7 @@ public class DialogManager : MonoBehaviour
             // increment
             else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
             {
+                SoundManager.Instance.Play("choice_move");
                 if (value < max_amount)
                 {
                     value++;
@@ -189,6 +193,7 @@ public class DialogManager : MonoBehaviour
             // confirm
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                SoundManager.Instance.Play("choice_confirm");
                 choiceMade = true;
             }
 
@@ -202,7 +207,7 @@ public class DialogManager : MonoBehaviour
 
     public IEnumerator ShowMainMenuAndWait(
     string message, string choiceA, string choiceB,
-    System.Action<bool> onChoiceMade)
+    System.Action<int> onChoiceMade)
     {
         int player_count = GameSettings.Instance.player_count;
         int round_count = GameSettings.Instance.round_limit;
@@ -214,6 +219,7 @@ public class DialogManager : MonoBehaviour
 
         void Redraw()
         {
+            SoundManager.Instance.Play("choice_move"); //222
             string s =
                 $"{message}\n" +
                 $"{(choice == 0 ? "> " : "")}{choiceA} = {player_count}/{GameSettings.Instance.player_count_max}{(choice == 0 ? " <" : "")}\n" +
@@ -259,6 +265,7 @@ public class DialogManager : MonoBehaviour
             }
             else if (Input.GetKeyDown(KeyCode.Space) && choice == 2)
             {
+                SoundManager.Instance.Play("choice_confirm");
                 done = true;
             }
 
@@ -266,12 +273,12 @@ public class DialogManager : MonoBehaviour
         }
 
         // Save results
-        GameSettings.Instance.player_count = player_count;
-        GameSettings.Instance.round_limit = round_count;
+        yield return GameSettings.Instance.player_count = player_count;
+        yield return GameSettings.Instance.round_limit = round_count;
         //GameSettings.Instance.glory_to_win = glory_count;
 
         ClearMessage();
-        onChoiceMade?.Invoke(true);
+        onChoiceMade?.Invoke(player_count);
     }
 
     public void ClearMessage()
