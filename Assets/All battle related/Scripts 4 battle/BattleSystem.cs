@@ -13,6 +13,11 @@ public enum BattleState { START, PLAYERTURN, ENEMYTURN, WON, LOST }
 
 public class BattleSystem : MonoBehaviour
 {
+    public GameObject skeletonPrefab;
+    public GameObject turtlePrefab;
+    public GameObject orcPrefab;
+    public GameObject golemPrefab;
+
     public GameObject playerPrefab;
     public GameObject enemyPrefab;
 
@@ -38,6 +43,14 @@ public class BattleSystem : MonoBehaviour
     {
         GameObject playerGO = Instantiate(playerPrefab, playerBattleStation);
         playerUnit = playerGO.GetComponent<Unit>();
+        GameObject prefabToSpawn = skeletonPrefab; // Default to skeleton
+
+        if (GameState.enemyToSpawn == "Turtle")
+            prefabToSpawn = turtlePrefab;
+        else if (GameState.enemyToSpawn == "Orc")
+            prefabToSpawn = orcPrefab;
+        else if (GameState.enemyToSpawn == "Golem")
+            prefabToSpawn = golemPrefab;
         GameObject enemyGO = Instantiate(enemyPrefab, enemyBattleStation);
         enemyUnit = enemyGO.GetComponent<Unit>();
 
@@ -109,7 +122,7 @@ public class BattleSystem : MonoBehaviour
         {
             enemyUnit.PlayDeathAnimation();
             state = BattleState.WON;
-            EndBattle();
+            StartCoroutine(EndBattle());
         }
         else
         {
@@ -183,7 +196,7 @@ public class BattleSystem : MonoBehaviour
         {
             playerUnit.PlayDeathAnimation();
             state = BattleState.LOST;
-            EndBattle();
+            StartCoroutine(EndBattle());
 
         }
         else
