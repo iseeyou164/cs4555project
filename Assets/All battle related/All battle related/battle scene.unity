@@ -2804,7 +2804,7 @@ MonoBehaviour:
   turtlePrefab: {fileID: 9207836710157157799, guid: 07c6eda69b55c2049abbb2fd839eb01f, type: 3}
   orcPrefab: {fileID: 8486511018606949672, guid: bb3583e043127ac48883fdc26c48b7ad, type: 3}
   golemPrefab: {fileID: 7820048388106661556, guid: 2989a51a8a63aa646a5a467b4e2f9a13, type: 3}
-  playerPrefab: {fileID: 3016460634841442400, guid: 6234c421bfb63324f988b2571918420b, type: 3}
+  playerPrefab: {fileID: 4459224086015619836, guid: bab885a98f8049845bb55f46566c42dc, type: 3}
   enemyPrefab: {fileID: 7820048388106661556, guid: 2989a51a8a63aa646a5a467b4e2f9a13, type: 3}
   playerBattleStation: {fileID: 1330961057}
   enemyBattleStation: {fileID: 1258745061}
