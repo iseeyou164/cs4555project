@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
   unitName: Golem
-  unitLevel: 50
+  unitLevel: 3
   damage: 50
-  currentHealth: 200
-  maxHealth: 200
+  currentHealth: 30
+  maxHealth: 30

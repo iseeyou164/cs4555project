@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering.Analytics;
+//using UnityEditor.Rendering.Analytics;
 using UnityEngine;
 
 public class DiceRoller : MonoBehaviour

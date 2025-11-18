@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
   unitName: Skeleton
-  unitLevel: 5
-  damage: 3
-  currentHealth: 20
-  maxHealth: 20
+  unitLevel: 1
+  damage: 1
+  currentHealth: 10
+  maxHealth: 10

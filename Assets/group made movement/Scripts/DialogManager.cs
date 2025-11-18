@@ -1,7 +1,7 @@
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
+//using Unity.VisualScripting;
+//using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +18,12 @@ public class DialogManager : MonoBehaviour
     //public Image mainMenuBackground;
     [SerializeField] private TextMeshProUGUI mainSettings;
     public Image mainSettingsBackground;
+
+    [Header("UI Combat")]
+    [SerializeField] private TextMeshProUGUI playerStats;
+    public Image playerStatsBackground;
+    [SerializeField] private TextMeshProUGUI enemyStats;
+    public Image enemyStatsBackground;
 
     [Header("Settings")]
     public float padding = 10f; // padding around text
@@ -62,6 +68,7 @@ public class DialogManager : MonoBehaviour
 
     public IEnumerator ShowMessageAndWait(string message)
     {
+        Debug.Log($"{message}");
         ShowMessage(message);
         dialogueBackground.gameObject.SetActive(true);
         ResizeBackground();
@@ -281,6 +288,177 @@ public class DialogManager : MonoBehaviour
         onChoiceMade?.Invoke(player_count);
     }
 
+    public IEnumerator ShowBattleMenuAndWait(
+        string choiceA, string choiceB, string choiceC,
+            System.Action<string> onChoiceMade)
+        {
+        //int player_count = GameSettings.Instance.player_count;
+        //int round_count = GameSettings.Instance.round_limit;
+        //int glory_count = GameSettings.Instance.glory_to_win;
+
+        int choice = 0; // 0=players, 1=rounds, 2=start
+
+        dialogueBackground.gameObject.SetActive(true);
+
+        void Redraw()
+        {
+            SoundManager.Instance.Play("choice_move"); //222
+            string s =
+                $"Battle Menu:\n" +
+                $"{(choice == 0 ? "> " : "")}{choiceA}{(choice == 0 ? " <" : "")}\n" +
+                $"{(choice == 1 ? "> " : "")}{choiceB}{(choice == 1 ? " <" : "")}\n" +
+                $"{(choice == 2 ? "> " : "")}{choiceC}{(choice == 2 ? " <" : "")}\n";
+
+            ShowMessage(s);
+            ResizeBackground();
+        }
+
+        Redraw();
+
+        bool done = false;
+
+        while (!done)
+        {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                choice--;
+                if (choice < 0) choice = 3;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                choice++;
+                if (choice > 3) choice = 0;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                SoundManager.Instance.Play("choice_confirm");
+                done = true;
+            }
+
+            yield return null;
+        }
+
+        string action = "";
+        if (choice == 0)
+        {
+            action = "Attack";
+        }
+        else if (choice == 1)
+        {
+            action = "Item";
+        }
+        else if (choice == 2)
+        {
+            action = "Retreat";
+        }
+        ClearMessage();
+        onChoiceMade?.Invoke(action);
+    }
+
+    public void ShowPlayerBattleStats(string name, int level)
+    {
+        if (playerStats == null)
+        {
+            Debug.LogError("Message_Dialogue reference missing in DialogManager!");
+            return;
+        }
+
+        //GameSettings settings = GameSettings.Instance;
+        //PlayerData currentPlayer = GameSettings.Instance;
+        playerStats.text = $"{name}\n" +
+            $"LV {level}";
+
+        playerStatsBackground.gameObject.SetActive(true);
+        //ResizePBBackground();
+    }
+    public void ShowEnemyBattleStats(string name, int level)
+    {
+        if (enemyStats == null)
+        {
+            Debug.LogError("Message_Dialogue reference missing in DialogManager!");
+            return;
+        }
+
+        //GameSettings settings = GameSettings.Instance;
+        //PlayerData currentPlayer = GameSettings.Instance;
+        enemyStats.text = $"{name}\n" +
+            $"LV {level}";
+
+        enemyStatsBackground.gameObject.SetActive(true);
+        //ResizeEBBackground();
+    }
+
+    public IEnumerator ShowItemMenuAndWait(
+    string choiceA, string choiceB, string choiceC,
+        System.Action<string> onChoiceMade)
+    {
+        int player_count = GameSettings.Instance.player_count;
+        int round_count = GameSettings.Instance.round_limit;
+        //int glory_count = GameSettings.Instance.glory_to_win;
+
+        int choice = 0; // 0=players, 1=rounds, 2=start
+
+        dialogueBackground.gameObject.SetActive(true);
+
+        void Redraw()
+        {
+            SoundManager.Instance.Play("choice_move"); //222
+            string s =
+                $"Battle Menu:\n" +
+                $"{(choice == 0 ? "> " : "")}{choiceA}{(choice == 0 ? " <" : "")}\n" +
+                $"{(choice == 1 ? "> " : "")}{choiceB}{(choice == 1 ? " <" : "")}\n" +
+                $"{(choice == 2 ? "> " : "")}{choiceC}{(choice == 2 ? " <" : "")}\n";
+
+            ShowMessage(s);
+            ResizeBackground();
+        }
+
+        Redraw();
+
+        bool done = false;
+
+        while (!done)
+        {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                choice--;
+                if (choice < 0) choice = 3;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                choice++;
+                if (choice > 3) choice = 0;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                SoundManager.Instance.Play("choice_confirm");
+                done = true;
+            }
+
+            yield return null;
+        }
+
+        string action = "";
+        if (choice == 0)
+        {
+            action = "Attack";
+        }
+        else if (choice == 1)
+        {
+            action = "Item";
+        }
+        else if (choice == 2)
+        {
+            action = "Retreat";
+        }
+        ClearMessage();
+        onChoiceMade?.Invoke(action);
+    }
+
     public void ClearMessage()
     {
         if (eventDialogue != null)
@@ -315,6 +493,25 @@ public class DialogManager : MonoBehaviour
         // Set the background size slightly larger than text
         messageBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 1, padding * 1);
         //dialogueBackground.rectTransform.sizeDelta = new Vector2(padding * 2, padding * 2);
+    }
+
+    private void ResizePBBackground()
+    {
+        playerStats.ForceMeshUpdate();
+
+        Vector2 textSize = playerStats.GetRenderedValues(false);
+
+        // Set the background size slightly larger than text
+        playerStatsBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 1, padding * 1);
+    }
+    private void ResizeEBBackground()
+    {
+        enemyStats.ForceMeshUpdate();
+
+        Vector2 textSize = enemyStats.GetRenderedValues(false);
+
+        // Set the background size slightly larger than text
+        enemyStatsBackground.rectTransform.sizeDelta = textSize + new Vector2(padding * 1, padding * 1);
     }
 
 }

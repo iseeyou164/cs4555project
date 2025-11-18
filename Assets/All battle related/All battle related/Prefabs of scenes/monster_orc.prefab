@@ -2265,10 +2265,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
   unitName: The orc
-  unitLevel: 25
+  unitLevel: 2
   damage: 45
-  currentHealth: 50
-  maxHealth: 50
+  currentHealth: 20
+  maxHealth: 20
 --- !u!1 &8506791187710459495
 GameObject:
   m_ObjectHideFlags: 0

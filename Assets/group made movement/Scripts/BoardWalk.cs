@@ -191,26 +191,39 @@ public class BoardWalk : MonoBehaviour
         }
         else if (tile.CompareTag("red_tile"))
         {
-            Debug.Log("Landed on red tile. Initiate combat ");
-            if (currentTileIndex < 8) GameState.enemyToSpawn = "Skeleton";
-            else if (currentTileIndex >= 8 && currentTileIndex < 20) GameState.enemyToSpawn = "Turtle";
-            else if (currentTileIndex >= 21 && currentTileIndex <= 50) GameState.enemyToSpawn = "Orc";
-            else if (currentTileIndex > 50) GameState.enemyToSpawn = "Golem";
-            foreach (var player in TurnManager.Instance.players)
-            {
-                if (GameState.playerTileIndices.ContainsKey(player.name))
-                {
-                    GameState.playerTileIndices[player.name] = player.currentTileIndex;
-                }
-                else
-                {
-                    GameState.playerTileIndices.Add(player.name, player.currentTileIndex);
-                }
-            }
-            GameState.currentPlayerIndex = TurnManager.Instance.currentPlayerIndex;
-            GameState.returningFromBattle = true;
+            SoundManager.Instance.Play("choice_error");
 
-            SceneManager.LoadScene("battle scene");
+            CombatTile combat = tile.GetComponent<CombatTile>();
+
+            if (combat == null)
+            {
+                Debug.LogError($"Red tile '{tile.name}' has no CombatTile component attached!");
+                yield break;
+            }
+
+            Debug.Log("Landed on red tile. Combat ID: " + combat.combatID);
+            yield return CombatManager.Instance.TriggerCombat(combat.combatID, combat.enemy_spot, this);
+            //Debug.Log("Landed on red tile. Initiate combat ");
+
+            //if (currentTileIndex < 8) GameState.enemyToSpawn = "Skeleton";
+            //else if (currentTileIndex >= 8 && currentTileIndex < 20) GameState.enemyToSpawn = "Turtle";
+            //else if (currentTileIndex >= 21 && currentTileIndex <= 50) GameState.enemyToSpawn = "Orc";
+            //else if (currentTileIndex > 50) GameState.enemyToSpawn = "Golem";
+            //foreach (var player in TurnManager.Instance.players)
+            //{
+            //    if (GameState.playerTileIndices.ContainsKey(player.name))
+            //    {
+            //        GameState.playerTileIndices[player.name] = player.currentTileIndex;
+            //    }
+            //    else
+            //    {
+            //        GameState.playerTileIndices.Add(player.name, player.currentTileIndex);
+            //    }
+            //}
+            //GameState.currentPlayerIndex = TurnManager.Instance.currentPlayerIndex;
+            //GameState.returningFromBattle = true;
+
+            //SceneManager.LoadScene("battle scene");
         }
         else if (tile.CompareTag("green_tile"))
         {

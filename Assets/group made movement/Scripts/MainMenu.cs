@@ -1,7 +1,7 @@
-using System.Collections;
+//using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
+//using Unity.VisualScripting;
+//using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 public class MainMenu : MonoBehaviour

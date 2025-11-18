@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
+//using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.ProBuilder.MeshOperations;
-using static TurnMenu;
-using static UnityEditor.Rendering.CameraUI;
-using static UnityEngine.GraphicsBuffer;
+//using UnityEngine.ProBuilder.MeshOperations;
+//using static TurnMenu;
+//using static UnityEditor.Rendering.CameraUI;
+//using static UnityEngine.GraphicsBuffer;
 
 public class PlayerData : MonoBehaviour
 {
@@ -14,6 +14,7 @@ public class PlayerData : MonoBehaviour
     public int glory = 0;
     public int maxHealth = 20;
     public int health = 20;
+    public int level = 1;
 
     [Header("Items")]
     public string[] items = new string[3];
@@ -47,6 +48,7 @@ public class PlayerData : MonoBehaviour
 
     void Start()
     {
+        level = 1;
         diceCount = 1;
         maxHealth = 20;
         health = 20;
@@ -79,6 +81,11 @@ public class PlayerData : MonoBehaviour
     public void AddGold(int amount)
     {
         StartCoroutine(AddGoldCoroutine(amount));
+    }
+
+    public int getLevel()
+    {
+        return level;
     }
 
     private IEnumerator AddGoldCoroutine(int amount)
@@ -115,6 +122,7 @@ public class PlayerData : MonoBehaviour
             {
                 SoundManager.Instance.Play("generic_glory2");
                 glory += 1;
+                level += 1;
             }
 
             // POP UP DIALOGUE

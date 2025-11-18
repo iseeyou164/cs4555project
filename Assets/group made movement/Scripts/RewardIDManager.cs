@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Profiling;
-using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
+//using UnityEngine.Profiling;
+//using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class RewardIDManager : MonoBehaviour
 {
@@ -273,6 +273,7 @@ public class RewardIDManager : MonoBehaviour
             {
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You recover to full health!");
                 player.GetComponent<PlayerData>().gainHealth(20);
+                player.GetComponent<PlayerData>().level += 1;
             }
             else if (result <= 1)
             {
@@ -481,6 +482,7 @@ public class RewardIDManager : MonoBehaviour
                 SoundManager.Instance.Play("generic_flee");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You stole all their treasure!");
                 goblin_loot = 4;
+                player.GetComponent<PlayerData>().level += 1;
             }
             else if (result <= 1)
             {
@@ -656,12 +658,14 @@ public class RewardIDManager : MonoBehaviour
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You helped the man who is a Priest! Gain a Greater Potion!");
                 SoundManager.Instance.Play("generic_glory");
                 player.GetComponent<PlayerData>().AddItem("Greater Potion");
+                player.GetComponent<PlayerData>().level += 1;
             }
             else if (15 < result && result <= 19)
             {
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Great Success!] You rolled {result}! You helped the man who is an Adventurer! Gain a Triple Dice!");
                 SoundManager.Instance.Play("generic_glory");
                 player.GetComponent<PlayerData>().AddItem("Triple Dice");
+                player.GetComponent<PlayerData>().level += 1;
             }
 
             yield return new WaitForSeconds(0.5f);

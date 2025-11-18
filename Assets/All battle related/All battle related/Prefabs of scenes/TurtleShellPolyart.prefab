@@ -1150,7 +1150,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
   unitName: Turtle
-  unitLevel: 10
+  unitLevel: 1
   damage: 5
-  currentHealth: 25
-  maxHealth: 25
+  currentHealth: 15
+  maxHealth: 15

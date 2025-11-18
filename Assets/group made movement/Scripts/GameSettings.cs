@@ -23,6 +23,7 @@ public class GameSettings : MonoBehaviour
     public int player_count = 2;
     public int player_count_max = 4;
 
+    public static bool initialized = false;
     public bool settingsApplied = false;
 
     void Awake()
@@ -33,6 +34,8 @@ public class GameSettings : MonoBehaviour
 
     void Start()
     {
+        if (initialized) return;  // <--- prevents menu from reopening after combat
+        initialized = true;
         StartCoroutine(StartupRoutine());
         //StartCoroutine(DialogManager.Instance.ShowMainMenuAndWait(
         //    "Game Settings",
@@ -121,7 +124,9 @@ public class GameSettings : MonoBehaviour
 
     public void ApplyPlayerSettings()
     {
-
+        if (settingsApplied)
+            return;
+        Debug.Log("ApplyPlayerSettings CALLED", this);
         PlayerManager.Instance.players.Clear();
 
         for (int i = 0; i < playerObjects.Length; i++)

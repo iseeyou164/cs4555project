@@ -257,6 +257,7 @@ public class TurnManager : MonoBehaviour
         current_round = 1;
         currentPlayerIndex = 0;
         turnActive = false;
+        GameSettings.initialized = false;
         yield return StartCoroutine(GameSettings.Instance.ShowSettingsMenuAgain());
         gameOver = false;
         StartCoroutine(GameLoop());
