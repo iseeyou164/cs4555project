@@ -46,14 +46,39 @@ public class BoardWalk : MonoBehaviour
 
         while (steps > 0)
         {
-
+            BoardWalk currentPlayer = TurnManager.Instance.CurrentPlayer;
             Transform currentTile = tiles[currentTileIndex];
             SplitTile split = currentTile.GetComponent<SplitTile>();
+            ShopTile shop = currentTile.GetComponent<ShopTile>();
             GloryTile glory = currentTile.GetComponent<GloryTile>();
 
             if (split == null)
             {
                 currentTileIndex++;
+            }
+
+            if(shop != null)
+            {
+                bool finishShop = false;
+                Debug.Log($"shop!!!!!!!!");
+                SoundManager.Instance.Play("generic_ping");
+                yield return DialogManager.Instance.ShowMessageAndWait($"{currentPlayer.name} is browsing the shop!");
+                yield return new WaitForSeconds(1f);
+                yield return StartCoroutine(DialogManager.Instance.ShowItemShopAndWait(shop.stockA, shop.stockA_price, shop.stockB, shop.stockB_price
+                    , shop.stockC, shop.stockC_price, shop.stockD, shop.stockD_price, (bool shoppy)=>
+                    {
+                        if (shoppy)
+                        {
+                            finishShop = true;
+                        }
+                        else
+                        {
+                            finishShop = true;
+                        }
+                    }
+                    ));
+                yield return new WaitUntil(() => finishShop = true);
+                yield return new WaitForSeconds(0.25f);
             }
 
             if (glory != null && glory.isActive)
@@ -89,6 +114,7 @@ public class BoardWalk : MonoBehaviour
             //}
             SoundManager.Instance.Play("generic_move");
             steps--;
+            currentPlayer.GetComponent<PlayerData>().experience+=1;
 
             // Move to currentTileIndex with your MoveToTile coroutine
             float duration = 1f / moveSpeed; // higher speed = shorter duration

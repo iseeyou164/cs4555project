@@ -96,7 +96,9 @@ public class CombatManager : MonoBehaviour
             SoundManager.Instance.Play("generic_glory");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Victory] You gain 1 Double Dice!");
             player.GetComponent<PlayerData>().AddItem("Double Dice");
-        }else if (i == 2)
+            player.GetComponent<PlayerData>().experience += 5;
+        }
+        else if (i == 2)
         {
             yield return player.GetComponent<PlayerData>().Die();
 
@@ -145,6 +147,7 @@ public class CombatManager : MonoBehaviour
             SoundManager.Instance.Play("generic_glory");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Victory] You gain 10 Gold!");
             player.GetComponent<PlayerData>().AddGold(10);
+            player.GetComponent<PlayerData>().experience += 7;
         }
         else if (i == 2)
         {
@@ -195,7 +198,7 @@ public class CombatManager : MonoBehaviour
             SoundManager.Instance.Play("generic_glory");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Victory] You gain a Triple Dice!");
             player.GetComponent<PlayerData>().AddItem("Triple Dice");
-            player.GetComponent<PlayerData>().level += 1;
+            player.GetComponent<PlayerData>().experience += 15;
         }
         else if (i == 2)
         {

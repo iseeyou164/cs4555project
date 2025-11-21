@@ -130,7 +130,7 @@ public class TurnManager : MonoBehaviour
         //yield return new WaitWhile(() => !currentPlayer.isMoving);
         PlayerData playerData = PlayerManager.Instance.GetPlayer(currentPlayerIndex);
 
-        DialogManager.Instance.ShowTop($"Round {current_round} / {max_round}! It's {currentPlayer.name}’s turn!");
+        DialogManager.Instance.ShowTop($"Round {current_round} / {GameSettings.Instance.round_limit}! It's {currentPlayer.name}’s turn!");
         yield return new WaitForSeconds(1.5f);
         turnActive = true;
 

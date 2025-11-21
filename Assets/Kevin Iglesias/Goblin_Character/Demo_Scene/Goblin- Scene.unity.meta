@@ -1,8 +1,7 @@
 fileFormatVersion: 2
-guid: c0ec378d7285da042ab574c759b98ab3
-NativeFormatImporter:
+guid: 9dd7677e82945224991bbdc7f4dfc131
+DefaultImporter:
   externalObjects: {}
-  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -11,5 +10,5 @@ AssetOrigin:
   productId: 311643
   packageName: Goblin LowPoly - Animation
   packageVersion: 1.0
-  assetPath: Assets/Kevin Iglesias/Goblin_Character/Material/MTL_COLORS_HDRP.mat
+  assetPath: Assets/Kevin Iglesias/Goblin_Character/Demo_Scene/Goblin- Scene.unity
   uploadId: 734482

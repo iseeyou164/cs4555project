@@ -85,7 +85,7 @@ public class TrapIDManager : MonoBehaviour
             SoundManager.Instance.Play("generic_glory");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You dodged successfully and gained a Glory Crystal!");
             player.GetComponent<PlayerData>().AddItem("Glory Warp");
-            player.GetComponent<PlayerData>().level += 1;
+            player.GetComponent<PlayerData>().experience += 10;
         }
         else if (result >= 17)
         {
@@ -151,7 +151,7 @@ public class TrapIDManager : MonoBehaviour
             SoundManager.Instance.Play("generic_heavyblow");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You destroyed the falling boulder and gained a Lucky Dice!");
             player.GetComponent<PlayerData>().AddItem("Lucky Dice");
-            player.GetComponent<PlayerData>().level += 1;
+            player.GetComponent<PlayerData>().experience += 10;
         }
         else if (result <= 1)
         {
@@ -236,7 +236,7 @@ public class TrapIDManager : MonoBehaviour
             SoundManager.Instance.Play("generic_gold");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You found {result} gold on the ground!");
             player.GetComponent<PlayerData>().AddGold(result);
-            player.GetComponent<PlayerData>().level += 1;
+            player.GetComponent<PlayerData>().experience += 10;
         }
         else if (result <= 1)
         {
@@ -315,7 +315,7 @@ public class TrapIDManager : MonoBehaviour
             SoundManager.Instance.Play("generic_die");
             yield return DialogManager.Instance.ShowMessageAndWait($"[Critical Success!] You rolled {result}! You parried the arrow and it flew into the goblin, slaying it! Gain a Lucky Dice");
             player.GetComponent<PlayerData>().AddItem("Lucky Dice");
-            player.GetComponent<PlayerData>().level += 1;
+            player.GetComponent<PlayerData>().experience += 10;
         }
         else if (result <= 1)
         {

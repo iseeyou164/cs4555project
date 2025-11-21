@@ -15,6 +15,8 @@ public class PlayerData : MonoBehaviour
     public int maxHealth = 20;
     public int health = 20;
     public int level = 1;
+    public int experience = 0;
+    public int experience_cap = 10;
 
     [Header("Items")]
     public string[] items = new string[3];
@@ -55,7 +57,8 @@ public class PlayerData : MonoBehaviour
         gold = 10;
         glory = 0;
         score = 0;
-        placement = 1;
+        experience = 0;
+        experience_cap = 15;
         usedItem = false;
         items = new string[3];
 
@@ -74,6 +77,7 @@ public class PlayerData : MonoBehaviour
 
     private void Update()
     {
+        levelUp();
         UpdateStatusUI();
     }
 
@@ -83,9 +87,19 @@ public class PlayerData : MonoBehaviour
         StartCoroutine(AddGoldCoroutine(amount));
     }
 
-    public int getLevel()
+    public void levelUp()
     {
-        return level;
+        int leftover = 0;
+        if (experience >= experience_cap)
+        {
+            leftover = experience - experience_cap;
+            level += 1;
+            maxHealth += 5;
+            gainHealth(5);
+            SoundManager.Instance.Play("generic_glory2");
+            experience = leftover;
+            experience_cap += 15;
+        }
     }
 
     private IEnumerator AddGoldCoroutine(int amount)
@@ -122,7 +136,7 @@ public class PlayerData : MonoBehaviour
             {
                 SoundManager.Instance.Play("generic_glory2");
                 glory += 1;
-                level += 1;
+                experience += 15;
             }
 
             // POP UP DIALOGUE
@@ -588,7 +602,7 @@ public class PlayerData : MonoBehaviour
             }
             //itemDisplay = string.Join(" ", items);
 
-            statsText.text = $"{playerName}\nHealth: {health}/{maxHealth}\nGold: {gold}\nGlory: {glory}\nItems: {itemDisplay}";
+            statsText.text = $"{playerName} Lv{level} [{experience}/{experience_cap}]\nHealth: {health}/{maxHealth}\nGold: {gold}\nGlory: {glory}\nItems: {itemDisplay}";
             statsText.ForceMeshUpdate();
             Canvas.ForceUpdateCanvases();
             statsText.enabled = false;

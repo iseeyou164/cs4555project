@@ -322,13 +322,13 @@ public class DialogManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
                 choice--;
-                if (choice < 0) choice = 3;
+                if (choice < 0) choice = 2;
                 Redraw();
             }
             else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
             {
                 choice++;
-                if (choice > 3) choice = 0;
+                if (choice > 2) choice = 0;
                 Redraw();
             }
             else if (Input.GetKeyDown(KeyCode.Space))
@@ -347,7 +347,7 @@ public class DialogManager : MonoBehaviour
         }
         else if (choice == 1)
         {
-            action = "Item";
+            action = "Heal";
         }
         else if (choice == 2)
         {
@@ -424,13 +424,13 @@ public class DialogManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
                 choice--;
-                if (choice < 0) choice = 3;
+                if (choice < 0) choice = 2;
                 Redraw();
             }
             else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
             {
                 choice++;
-                if (choice > 3) choice = 0;
+                if (choice > 2) choice = 0;
                 Redraw();
             }
             else if (Input.GetKeyDown(KeyCode.Space))
@@ -449,7 +449,7 @@ public class DialogManager : MonoBehaviour
         }
         else if (choice == 1)
         {
-            action = "Item";
+            action = "Heal";
         }
         else if (choice == 2)
         {
@@ -457,6 +457,134 @@ public class DialogManager : MonoBehaviour
         }
         ClearMessage();
         onChoiceMade?.Invoke(action);
+    }
+
+    public IEnumerator ShowItemShopAndWait(string stockA, int stockA_price, string stockB, int stockB_price, string stockC, int stockC_price, string stockD, int stockD_price,
+        System.Action<bool> onChoiceMade)
+    {
+        int player_count = GameSettings.Instance.player_count;
+        int round_count = GameSettings.Instance.round_limit;
+        PlayerData player = TurnManager.Instance.GetCurrentPlayer();
+        //int glory_count = GameSettings.Instance.glory_to_win;
+
+        int choice = 0; // 0=players, 1=rounds, 2=start
+
+        dialogueBackground.gameObject.SetActive(true);
+
+        void Redraw()
+        {
+            SoundManager.Instance.Play("choice_move"); //222
+            string s =
+                $"Battle Menu:\n" +
+                $"{(choice == 0 ? "> " : "")}{stockA} {stockA_price}G{(choice == 0 ? " <" : "")}\n" +
+                $"{(choice == 1 ? "> " : "")}{stockB} {stockB_price}G{(choice == 1 ? " <" : "")}\n" +
+                $"{(choice == 2 ? "> " : "")}{stockC} {stockC_price}G{(choice == 2 ? " <" : "")}\n" +
+                $"{(choice == 3 ? "> " : "")}{stockD} {stockD_price}G{(choice == 3 ? " <" : "")}\n" +
+                $"{(choice == 4 ? "> " : "")}Leave{(choice == 4 ? " <" : "")}\n"; 
+
+            ShowMessage(s);
+            ResizeBackground();
+        }
+
+        Redraw();
+
+        bool done = false;
+        yield return new WaitForSeconds(0.25f);
+        while (!done)
+        {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                choice--;
+                if (choice < 0) choice = 4;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                choice++;
+                if (choice > 4) choice = 0;
+                Redraw();
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                SoundManager.Instance.Play("choice_confirm");
+                done = true;
+            }
+
+            if (choice == 0 && done == true)
+            {
+                if (player.gold >= stockA_price)
+                {
+                    SoundManager.Instance.Play("generic_glory");
+                    yield return ShowMessageAndWait($"{player.name} bought a {stockA}!");
+                    player.AddItem(stockA);
+                    player.AddGold(-stockA_price);
+                    //done = true;
+                }
+                else
+                {
+                    if(done==true)SoundManager.Instance.Play("choice_error");
+                    done = false;
+                }
+            }
+            else if (choice == 1 && done == true)
+            {
+                if (player.gold >= stockB_price)
+                {
+                    SoundManager.Instance.Play("generic_glory");
+                    yield return ShowMessageAndWait($"{player.name} bought a {stockB}!");
+                    player.AddItem(stockB);
+                    player.AddGold(-stockB_price);
+                    //done = true;
+                }
+                else
+                {
+                    if (done == true) SoundManager.Instance.Play("choice_error");
+                    done = false;
+                }
+            }
+            else if (choice == 2)
+            {
+                if (player.gold >= stockC_price && done == true)
+                {
+                    SoundManager.Instance.Play("generic_glory");
+                    yield return ShowMessageAndWait($"{player.name} bought a {stockC}!");
+                    player.AddItem(stockC);
+                    player.AddGold(-stockC_price);
+                    //done = true;
+                }
+                else
+                {
+                    if (done == true) SoundManager.Instance.Play("choice_error");
+                    done = false;
+                }
+            }
+            else if (choice == 3 && done == true)
+            {
+                if (player.gold >= stockD_price)
+                {
+                    SoundManager.Instance.Play("generic_glory");
+                    yield return ShowMessageAndWait($"{player.name} bought a {stockD}!");
+                    player.AddItem(stockD);
+                    player.AddGold(-stockD_price);
+                    //done = true;
+                }
+                else
+                {
+                    if (done == true) SoundManager.Instance.Play("choice_error");
+                    done = false;
+                }
+            }
+            else if (choice == 4)
+            {
+                //nothing
+            }
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.25f);
+        ClearMessage();
+        onChoiceMade?.Invoke(done);
     }
 
     public void ClearMessage()

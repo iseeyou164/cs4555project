@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: c0ec378d7285da042ab574c759b98ab3
+guid: 5f09becb7295b1e49bcf0ca4cc285fd0
 NativeFormatImporter:
   externalObjects: {}
-  mainObjectFileID: 2100000
+  mainObjectFileID: 7400000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 311643
   packageName: Goblin LowPoly - Animation
   packageVersion: 1.0
-  assetPath: Assets/Kevin Iglesias/Goblin_Character/Material/MTL_COLORS_HDRP.mat
+  assetPath: Assets/Kevin Iglesias/Goblin_Character/Animation/Goblin_Anim/rig_Anim_WALK.anim
   uploadId: 734482
