@@ -18,6 +18,7 @@ public class DiceRoller : MonoBehaviour
     public float stopThreshold = 0.01f; // how slow dice must get to be considered stopped
     public float checkInterval = 0.5f;  // how often to check if dice stopped
     public float timeout = 5f; // 5 seconds timeout
+    private FocusCamera focusCam;
 
     private void Awake()
     {
@@ -33,6 +34,7 @@ public class DiceRoller : MonoBehaviour
 
     public IEnumerator RollDiceVisual(int sides, int rolls, System.Action<int> onResult)
     {
+        focusCam = FindFirstObjectByType<FocusCamera>();
         SoundManager.Instance.Play("generic_clank");
         //get prefab for dice
         GameObject diceData = dicePrefabs.Find(d => d.name.ToLower().Contains($"d{sides}"));
@@ -50,7 +52,13 @@ public class DiceRoller : MonoBehaviour
         {
             Vector3 offset = Random.insideUnitSphere * 0.3f; // to prevent overlapping
             GameObject die = Instantiate(diceData, spawnPoint.position + offset, Random.rotation);
+
             Rigidbody rb = die.GetComponent<Rigidbody>();
+
+            focusCam.SetTarget(rb.transform);
+            var a = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
+            a.SetTarget(rb.transform);
+
             rb.AddForce(Random.onUnitSphere * rollForce, ForceMode.Impulse);
             rb.AddTorque(Random.onUnitSphere * torqueForce, ForceMode.Impulse);
             //issue to fix: gets result before dice is finished rolling.
@@ -136,6 +144,10 @@ public class DiceRoller : MonoBehaviour
                 Destroy(die.gameObject);
         }
         DiceResult.Instance.ShowResult(total);
+        focusCam.SetTarget(PlayerManager.Instance.GetPlayer(TurnManager.Instance.currentPlayerIndex).transform);
+        var poi = GameObject.Find("PointOfInterest").GetComponent<PointOfInterest>();
+        poi.SetTarget(PlayerManager.Instance.GetPlayer(TurnManager.Instance.currentPlayerIndex).transform);
+
     }
 
     // Roll player vs gambler

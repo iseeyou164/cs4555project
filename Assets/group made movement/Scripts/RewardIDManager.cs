@@ -165,7 +165,7 @@ public class RewardIDManager : MonoBehaviour
                 //SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Fail!] You rolled {result}! You gained nothing...");
             }
-            else if (4 < result && result <= 9)
+            else if (4 <= result && result <= 9)
             {
                 SoundManager.Instance.Play("generic_glory");
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Success!] You rolled {result}! You gained {result} gold!");
@@ -180,17 +180,21 @@ public class RewardIDManager : MonoBehaviour
                 {
                     randomItem = "Triple Dice";
                 }
-                else if (result >= 15)
+                else if (result >= 16)
                 {
                     randomItem = "Double Dice";
                 }
+                else if (result >= 14)
+                {
+                    randomItem = "Warp Crystal";
+                }
                 else if (result >= 12)
                 {
-                    randomItem = "Potion";
+                    randomItem = "Pixie Dust";
                 }
                 else
                 {
-                    randomItem = "Pixie Dust";
+                    randomItem = "Potion";
                 }
                 yield return DialogManager.Instance.ShowMessageAndWait($"[Success] You rolled {result}! You gained a {randomItem}!");
                 player.GetComponent<PlayerData>().AddItem(randomItem);

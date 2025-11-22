@@ -11,6 +11,9 @@ public class GameSettings : MonoBehaviour
     public GameObject[] playerObjects;        // assign Player_0, Player_1, ...
     public GameObject[] playerStatusUI;       // assign UI 0, UI 1, ...
 
+    [Header("LOGO")]
+    public GameObject mainMenuLogo;
+
     public int round_limit = 10;
     public int round_limit_min = 5;
     public int round_limit_max = 99;
@@ -55,6 +58,10 @@ public class GameSettings : MonoBehaviour
             PlayerData pd = playerObjects[i].GetComponent<PlayerData>();
             pd.ResetForNewGame();
         }
+
+        if (mainMenuLogo != null)
+            mainMenuLogo.SetActive(true);
+
         //yield return new WaitUntil(() => reset == true);
 
         DialogManager.Instance.ShowTop("Use [W,S,Up,Down] to traverse menu.\nUse [A,D,Left,Right] to adjust values.");
@@ -82,6 +89,9 @@ public class GameSettings : MonoBehaviour
 
     private IEnumerator StartupRoutine()
     {
+        if (mainMenuLogo != null)
+            mainMenuLogo.SetActive(true);
+
         //PlayerData.Instance.players.ResetForNewGame();
         DialogManager.Instance.ShowTop("[W,S,Up,Down] to traverse menu.\n[A,D,Left,Right] to adjust values.\n[Space] on Start Game to continue.");
         settingsApplied = false;
@@ -153,6 +163,10 @@ public class GameSettings : MonoBehaviour
                 }
             }
         }
+
+        if (mainMenuLogo != null)
+            mainMenuLogo.SetActive(false);
+
         settingsApplied = true;
         TurnManager.Instance.gaming = true;
         TurnManager.Instance.StartAgain();

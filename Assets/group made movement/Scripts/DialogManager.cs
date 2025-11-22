@@ -514,6 +514,7 @@ public class DialogManager : MonoBehaviour
             {
                 if (player.gold >= stockA_price)
                 {
+                    yield return new WaitForSeconds(0.25f);
                     SoundManager.Instance.Play("generic_glory");
                     yield return ShowMessageAndWait($"{player.name} bought a {stockA}!");
                     player.AddItem(stockA);
@@ -530,6 +531,7 @@ public class DialogManager : MonoBehaviour
             {
                 if (player.gold >= stockB_price)
                 {
+                    yield return new WaitForSeconds(0.25f);
                     SoundManager.Instance.Play("generic_glory");
                     yield return ShowMessageAndWait($"{player.name} bought a {stockB}!");
                     player.AddItem(stockB);
@@ -546,6 +548,7 @@ public class DialogManager : MonoBehaviour
             {
                 if (player.gold >= stockC_price && done == true)
                 {
+                    yield return new WaitForSeconds(0.25f);
                     SoundManager.Instance.Play("generic_glory");
                     yield return ShowMessageAndWait($"{player.name} bought a {stockC}!");
                     player.AddItem(stockC);
@@ -562,6 +565,7 @@ public class DialogManager : MonoBehaviour
             {
                 if (player.gold >= stockD_price)
                 {
+                    yield return new WaitForSeconds(0.25f);
                     SoundManager.Instance.Play("generic_glory");
                     yield return ShowMessageAndWait($"{player.name} bought a {stockD}!");
                     player.AddItem(stockD);
