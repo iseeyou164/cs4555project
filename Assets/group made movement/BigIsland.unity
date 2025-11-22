@@ -4027,9 +4027,6 @@ PrefabInstance:
       addedObject: {fileID: 1982075988}
     - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1982075987}
-    - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1982075986}
   m_SourcePrefab: {fileID: 100100000, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
 --- !u!1001 &61344559
@@ -23292,14 +23289,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &327918645
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 327918640}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!43 &328491044
 Mesh:
   m_ObjectHideFlags: 0
@@ -40967,9 +40956,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1501363847}
-    - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1501363846}
     - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
       insertIndex: -1
@@ -46118,9 +46104,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 327918645}
     - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
       insertIndex: -1
       addedObject: {fileID: 327918644}
@@ -104857,14 +104840,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1501363847
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1363087349}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &1503065449
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -105814,9 +105789,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2012956461}
     - targetCorrespondingSourceObject: {fileID: 1437255766162235266, guid: fc1e6671fa62da64e8a8a5931932dcce, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2012956460}
@@ -137977,14 +137949,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1982075987
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 205048404}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!65 &1982075988
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -139851,14 +139815,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &2012956461
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2012956456}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &2014225630
 PrefabInstance:
   m_ObjectHideFlags: 0
