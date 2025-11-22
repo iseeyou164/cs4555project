@@ -133,7 +133,17 @@ public class BoardWalk : MonoBehaviour
     {
         float elapsed = 0f;
 
-        // midpoint lifted slightly for arc effect
+        Vector3 direction = (endPos - startPos).normalized;
+        direction.y = 0; 
+
+        Quaternion startRot = transform.rotation;
+        Quaternion endRot = startRot; 
+
+        if (direction != Vector3.zero)
+        {
+            endRot = Quaternion.LookRotation(direction);
+        }
+
         Vector3 midPos = (startPos + endPos) / 2f + Vector3.up * 3.0f;
 
         while (elapsed < duration)
@@ -149,11 +159,17 @@ public class BoardWalk : MonoBehaviour
             );
 
             transform.position = curvedPos;
+            transform.rotation = Quaternion.Slerp(startRot, endRot, t * 5f);
 
             yield return null;
         }
 
         transform.position = endPos;
+
+        if (direction != Vector3.zero)
+        {
+            transform.rotation = endRot;
+        }
     }
 
     void UpdateStepLabel(int steps)
